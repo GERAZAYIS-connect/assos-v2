@@ -27,7 +27,7 @@ RUN pnpm --filter @assos/api exec prisma generate
 RUN pnpm --filter @assos/api build
 
 # Deploy standalone package for production
-RUN pnpm --filter=@assos/api --prod deploy /app/deploy
+RUN pnpm --filter=@assos/api --prod deploy /app/deploy --legacy
 
 # Production stage
 FROM base AS runner
