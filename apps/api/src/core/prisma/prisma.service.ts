@@ -20,7 +20,12 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       rawUrl.startsWith('https://') ||
       rawUrl.startsWith('http://');
 
-    if (!isRemote) {
+    if (isRemote) {
+      // Turso remote HTTP fallback conversion for high compatibility
+      if (url.startsWith('libsql://')) {
+        url = url.replace('libsql://', 'https://');
+      }
+    } else {
       const dbPath = rawUrl.replace(/^file:/, '');
       const absolutePath = path.isAbsolute(dbPath) ? dbPath : path.join(process.cwd(), dbPath);
       url = `file:${absolutePath.replace(/\\/g, '/')}`;
@@ -37,7 +42,11 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       ],
     });
 
-    this.logger.log(`Initializing Prisma Client with URL: ${isRemote ? 'Remote LibSQL Database' : url}`);
+    this.logger.log(
+      `Initializing Prisma Client with URL: ${isRemote ? 'Remote LibSQL Database (' + url.split('?')[0] + ')' : url} | AuthToken: ${
+        authToken ? 'PRESENT (' + authToken.substring(0, 8) + '...)' : 'MISSING'
+      }`,
+    );
   }
 
   async onModuleInit() {
