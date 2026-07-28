@@ -29,9 +29,11 @@ RUN pnpm --filter @assos/api build
 # Deploy standalone package for production
 RUN pnpm --filter=@assos/api --prod deploy /app/deploy --legacy
 
-# Copy prisma schema and re-generate client inside the deploy folder
+# Copy prisma schema, remove dev config, and re-generate client inside the deploy folder
 COPY apps/api/prisma /app/deploy/prisma
-RUN cd /app/deploy && /app/node_modules/.bin/prisma generate --schema=prisma/schema.prisma
+RUN rm -f /app/deploy/prisma.config.ts && \
+    cd /app/deploy && \
+    node /app/node_modules/prisma/build/index.js generate --schema=prisma/schema.prisma
 
 # Production stage
 FROM base AS runner
