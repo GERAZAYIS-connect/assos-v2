@@ -41,6 +41,19 @@ export function proxy(request: NextRequest) {
     currentHost = hostname.replace(`.${cleanRoot}`, '').toLowerCase();
   }
 
+  // Exclude main domains / localhost
+  const isMainDomain =
+    currentHost === 'localhost' ||
+    currentHost === 'lvh.me' ||
+    currentHost === 'assos' ||
+    currentHost === 'www' ||
+    currentHost === rootDomain.replace(':3000', '');
+
+  // Allow public access to the landing page on the main domain
+  if (url.pathname === '/' && isMainDomain) {
+    return NextResponse.next();
+  }
+
   // Authentication check for protected routes
   const hasToken = request.cookies.has('next-auth.session-token') || request.cookies.has('__Secure-next-auth.session-token');
   if (!hasToken) {
@@ -51,14 +64,8 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Exclude main domains / localhost
-  if (
-    currentHost === 'localhost' ||
-    currentHost === 'lvh.me' ||
-    currentHost === 'assos' ||
-    currentHost === 'www' ||
-    currentHost === rootDomain.replace(':3000', '')
-  ) {
+  // Allow access to other pages on the main domain
+  if (isMainDomain) {
     return NextResponse.next();
   }
 
