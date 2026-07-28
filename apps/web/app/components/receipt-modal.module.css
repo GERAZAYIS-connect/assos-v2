@@ -1,0 +1,250 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  padding: 1rem;
+}
+
+.modal {
+  background-color: #fff;
+  color: #000;
+  border-radius: 1rem;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  animation: popIn 0.2s ease-out;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.header {
+  padding: 1.25rem 1.5rem;
+  background: #000;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+.body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex-grow: 1;
+  background: #fdfdfd;
+}
+
+.footer {
+  padding: 1rem 1.5rem;
+  background: #fafafa;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.downloadBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #000;
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.downloadBtn:hover {
+  opacity: 0.85;
+}
+
+.dismissBtn {
+  background: #fff;
+  color: #000;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.dismissBtn:hover {
+  border-color: #000;
+}
+
+/* Receipt content style inside modal */
+.receiptDoc {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  color: #111111;
+  font-family: inherit;
+}
+
+.receiptHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.logo {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  border-radius: 0.5rem;
+}
+
+.logoPlaceholder {
+  width: 50px;
+  height: 50px;
+  background: #f0f0f0;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ddd;
+}
+
+.assocName {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #000;
+  margin: 0;
+}
+
+.receiptTitle {
+  font-size: 0.75rem;
+  color: #666;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin: 0.2rem 0 0 0;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 1rem 0;
+}
+
+.refRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.refLabel {
+  font-size: 0.75rem;
+  color: #666;
+  display: block;
+}
+
+.refCode {
+  font-family: monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #000;
+}
+
+.statusBadge {
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #000;
+  color: #fff;
+}
+
+.detailsTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.5rem 0;
+}
+
+.detailsTable td {
+  padding: 0.5rem 0;
+  font-size: 0.85rem;
+}
+
+.tdLabel {
+  color: #666;
+  width: 40%;
+}
+
+.tdValue {
+  color: #000;
+  font-weight: 600;
+  width: 60%;
+  text-align: right;
+}
+
+.amountSection {
+  text-align: center;
+  padding: 1rem;
+  background: #fafafa;
+  border-radius: 0.5rem;
+  border: 1px solid #eee;
+}
+
+.amountLabel {
+  font-size: 0.75rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.amountValue {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #000;
+}
+
+.receiptFooter {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #888;
+  margin-top: 1rem;
+}

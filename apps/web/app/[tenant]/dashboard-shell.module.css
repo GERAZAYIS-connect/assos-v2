@@ -1,0 +1,270 @@
+/* Material Design 3 — Universal Mobile-First Dashboard Shell Styling */
+
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #fafafa;
+  color: #000000;
+}
+
+@media (min-width: 768px) {
+  .shell {
+    flex-direction: row;
+  }
+}
+
+/* ——— Desktop Sidebar (>= 768px) ——— */
+.desktopSidebar {
+  display: none;
+  width: 260px;
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 50;
+}
+
+@media (min-width: 768px) {
+  .desktopSidebar {
+    display: flex;
+  }
+}
+
+.sidebarLogo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.sidebarLogo span:first-child {
+  font-size: 2rem;
+  color: #000000;
+}
+
+.assocName {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #000000;
+}
+
+.sidebarNav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 0.75rem;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.7rem 1rem;
+  border-radius: 10px;
+  color: #475569;
+  font-weight: 500;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.navItem:hover {
+  background: #f1f5f9;
+  color: #000000;
+}
+
+.navItemActive {
+  background: #000000;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.navItemActive:hover {
+  background: #1e293b;
+  color: #ffffff;
+}
+
+.sidebarFooter {
+  padding: 1rem 0.75rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+/* ——— Main Layout Container ——— */
+.mainContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .mainContainer {
+    margin-left: 260px;
+    width: calc(100% - 260px);
+  }
+}
+
+.mainContent {
+  flex: 1;
+  padding-bottom: 80px; /* Space for mobile bottom nav */
+}
+
+@media (min-width: 768px) {
+  .mainContent {
+    padding-bottom: 2rem;
+  }
+}
+
+/* ——— Mobile Header (< 768px) ——— */
+.mobileHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1rem;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+@media (min-width: 768px) {
+  .mobileHeader {
+    display: none;
+  }
+}
+
+.menuToggleBtn, .iconBtn {
+  background: transparent;
+  border: none;
+  color: #000000;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.menuToggleBtn:hover, .iconBtn:hover {
+  background: #f1f5f9;
+}
+
+.mobileLogo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mobileLogo span:first-child {
+  font-size: 1.5rem;
+  color: #000000;
+}
+
+.assocTitle {
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  color: #000000;
+}
+
+/* ——— Mobile Drawer Overlay ——— */
+.mobileOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+}
+
+.mobileDrawer {
+  width: 280px;
+  background: #ffffff;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  box-shadow: 10px 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 1rem;
+}
+
+.drawerHeader h3 {
+  margin: 0;
+  font-weight: 800;
+  color: #000000;
+}
+
+.drawerNav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* ——— Mobile Bottom Navigation Bar (< 768px) ——— */
+.mobileBottomNav {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  z-index: 40;
+  padding: 0 0.5rem;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+}
+
+@media (min-width: 768px) {
+  .mobileBottomNav {
+    display: none;
+  }
+}
+
+.bottomNavItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-decoration: none;
+  flex: 1;
+  height: 100%;
+}
+
+.bottomNavItem span:first-child {
+  font-size: 1.35rem;
+}
+
+.bottomNavItemActive {
+  color: #000000;
+  font-weight: 700;
+}
+
+.bottomNavItemActive span:first-child {
+  transform: scale(1.1);
+}

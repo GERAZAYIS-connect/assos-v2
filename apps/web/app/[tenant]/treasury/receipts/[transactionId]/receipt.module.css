@@ -1,0 +1,286 @@
+/* ===================================================
+   Receipt Page — Noir & Blanc, Print-optimized
+   =================================================== */
+
+/* --- Screen layout wrapper --- */
+.page {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding: 2rem 1rem;
+  font-family: var(--font-body, 'Inter', sans-serif);
+}
+
+.centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  font-size: 1rem;
+  color: #444;
+}
+
+/* --- Toolbar (hidden on print) --- */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 680px;
+  margin: 0 auto 1.5rem;
+}
+
+.backBtn {
+  color: #000;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  transition: background 0.15s;
+}
+
+.backBtn:hover { background: #f0f0f0; }
+
+.printBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.printBtn:hover { opacity: 0.85; }
+
+/* --- Receipt document --- */
+.receipt {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 2.5rem 2.75rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+}
+
+/* --- Header --- */
+.receiptHeader {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.logo {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+}
+
+.logoPlaceholder {
+  width: 60px;
+  height: 60px;
+  border-radius: 6px;
+  border: 2px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: #000;
+  background: #f5f5f5;
+}
+
+.assocInfo { flex: 1; }
+
+.assocName {
+  font-family: var(--font-display, 'Outfit', sans-serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 0.15rem;
+  line-height: 1.2;
+}
+
+.receiptTitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #555;
+}
+
+/* --- Divider --- */
+.divider {
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  margin: 1.25rem 0;
+}
+
+/* --- Reference row --- */
+.refRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.label {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #888;
+  margin-bottom: 0.2rem;
+}
+
+.refCode {
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #000;
+  letter-spacing: 0.05em;
+}
+
+/* --- Status badge --- */
+.statusBadge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.75rem;
+  border-radius: 4px;
+  border: 1.5px solid #000;
+  color: #000;
+  background: #fff;
+  white-space: nowrap;
+}
+
+.status_CONFIRMED {
+  background: #000;
+  color: #fff;
+  border-color: #000;
+}
+
+.status_PENDING {
+  background: #fff;
+  color: #555;
+  border-color: #aaa;
+}
+
+.status_FAILED {
+  background: #fff;
+  color: #c00;
+  border-color: #c00;
+}
+
+/* --- Details table --- */
+.detailsTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.detailsTable tr:not(:last-child) td {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.tdLabel {
+  padding: 0.65rem 0.5rem 0.65rem 0;
+  font-size: 0.8rem;
+  color: #666;
+  font-weight: 500;
+  width: 38%;
+  vertical-align: top;
+}
+
+.tdValue {
+  padding: 0.65rem 0 0.65rem 0.5rem;
+  font-size: 0.875rem;
+  color: #000;
+  font-weight: 500;
+}
+
+.caisseType {
+  font-size: 0.75rem;
+  color: #888;
+  font-weight: 400;
+}
+
+/* --- Amount section --- */
+.amountSection {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+}
+
+.amountLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #555;
+}
+
+.amountValue {
+  font-family: var(--font-display, 'Outfit', sans-serif);
+  font-size: 2rem;
+  font-weight: 700;
+  color: #000;
+}
+
+.amountIn { color: #000; }
+.amountOut { color: #000; }
+
+/* --- Footer --- */
+.receiptFooter {
+  text-align: center;
+}
+
+.receiptFooter p {
+  font-size: 0.75rem;
+  color: #888;
+  line-height: 1.5;
+}
+
+.txId {
+  font-family: 'Courier New', monospace;
+  font-size: 0.65rem !important;
+  color: #bbb !important;
+  margin-top: 0.5rem;
+}
+
+/* ===================================================
+   PRINT STYLES — This is what gets saved to PDF
+   =================================================== */
+@media print {
+  .toolbar { display: none !important; }
+
+  .page {
+    background: #fff;
+    padding: 0;
+  }
+
+  .receipt {
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+    padding: 1.5rem;
+    max-width: 100%;
+  }
+
+  .divider {
+    border-top-color: #ccc;
+  }
+}

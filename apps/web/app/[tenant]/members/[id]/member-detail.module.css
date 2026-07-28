@@ -1,0 +1,759 @@
+/* Material Design 3 — Strict Black & White Palette
+   Allowed Colors: RED (#dc2626) for Error/Danger, GREEN (#16a34a) for Success/Validation,
+   ORANGE (#d97706) for warnings/expired states.
+   All rest: Black (#000000), Dark Grey (#1e293b), Crisp White (#ffffff). */
+
+.container {
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.topBar { margin-bottom: 1.5rem; }
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #000000;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.backLink:hover { text-decoration: underline; }
+
+/* ─── Header Card ─────────────────────────────────────────────────────────── */
+.headerCard {
+  background: #ffffff;
+  border: 1px solid #000000;
+  border-radius: 20px;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.avatarLarge {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #000000;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarUploadSection {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.25rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  margin-bottom: 1.5rem;
+}
+
+.avatarUploadPreview {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #000000;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.avatarUploadInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.avatarUploadInfo p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.uploadPhotoBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #000000;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: fit-content;
+  transition: background 0.15s;
+}
+
+.uploadPhotoBtn:hover {
+  background: #262626;
+}
+
+.headerDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.titleRow h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #000000;
+  margin: 0;
+}
+
+.roleBadge {
+  background: #f1f5f9;
+  color: #000000;
+  border: 1px solid #cbd5e1;
+  padding: 0.2rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.statusPill {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+}
+
+.status_active { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.status_suspended { background: #f8fafc; color: #475569; border: 1px solid #cbd5e1; }
+.status_expelled { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+
+.matriculeText {
+  color: #475569;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* ─── Tabs ─────────────────────────────────────────────────────────────────── */
+.tabsNav {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.tabBtn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.1rem;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #64748b;
+  cursor: pointer;
+  margin-bottom: -2px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tabActive {
+  color: #000000;
+  border-bottom-color: #000000;
+}
+
+.tabBadgeGreen {
+  background: #16a34a;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: 20px;
+  letter-spacing: 0.03em;
+}
+
+.tabBadgeOrange {
+  background: #d97706;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: 20px;
+  letter-spacing: 0.03em;
+}
+
+.tabContent {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+/* ─── Section Header ────────────────────────────────────────────────────────── */
+.sectionHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.sectionHeader h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #000000;
+  margin: 0 0 0.2rem 0;
+}
+
+.sectionHeader p {
+  color: #64748b;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* ─── Form Grid ─────────────────────────────────────────────────────────────── */
+.profileForm { width: 100%; }
+
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.fieldFull {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.field label, .fieldFull label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #000000;
+}
+
+.field input,
+.fieldFull input,
+.field select {
+  padding: 0.7rem 0.9rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  outline: none;
+  color: #000000;
+  background: #ffffff;
+  transition: border-color 0.15s;
+}
+
+.field input:focus,
+.fieldFull input:focus {
+  border-color: #000000;
+}
+
+.textarea {
+  padding: 0.7rem 0.9rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  outline: none;
+  color: #000000;
+  background: #ffffff;
+  resize: vertical;
+  font-family: inherit;
+  transition: border-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.textarea:focus { border-color: #000000; }
+
+.readOnlyInput {
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.formFooter {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.saveBtn {
+  background: #000000;
+  color: #ffffff;
+  border: 1px solid #000000;
+  padding: 0.8rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: background 0.15s;
+}
+
+.saveBtn:hover:not(:disabled) { background: #262626; }
+.saveBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ─── Proxy / Procuration ───────────────────────────────────────────────────── */
+.proxyStatusBanner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: 14px;
+  margin-bottom: 1.5rem;
+  border: 1px solid;
+}
+
+.proxyStatusBanner strong { display: block; font-size: 0.95rem; font-weight: 700; }
+.proxyStatusBanner p { margin: 0.1rem 0 0; font-size: 0.85rem; }
+
+.proxyBanner_active {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+
+.proxyBanner_expired {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.proxyBanner_revoked {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #64748b;
+}
+
+.proxyBanner_none {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #64748b;
+}
+
+.revokeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #ffffff;
+  color: #dc2626;
+  border: 1.5px solid #dc2626;
+  padding: 0.75rem 1.25rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.revokeBtn:hover { background: #fef2f2; }
+
+.revokeConfirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+}
+
+.revokeConfirm p { margin: 0; font-size: 0.9rem; font-weight: 600; color: #dc2626; }
+
+.revokeBtnConfirm {
+  background: #dc2626;
+  color: #ffffff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.cancelBtn {
+  background: #ffffff;
+  color: #000000;
+  border: 1px solid #cbd5e1;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.errorAlert {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 0.8rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+/* ─── Certificates ──────────────────────────────────────────────────────────── */
+.generateCertBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #000000;
+  color: #ffffff;
+  border: none;
+  padding: 0.8rem 1.4rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.generateCertBtn:hover:not(:disabled) { background: #262626; }
+.generateCertBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.noCertificates {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #64748b;
+}
+
+.noCertificates span.material-symbols-rounded { font-size: 3.5rem; color: #cbd5e1; display: block; margin-bottom: 0.75rem; }
+.noCertificates p { margin: 0 0 0.3rem; font-weight: 600; color: #1e293b; }
+
+.certificatesList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.certCard {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: 14px;
+  border: 1px solid;
+  transition: box-shadow 0.15s;
+}
+
+.certCard:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); }
+
+.certValid { background: #f0fdf4; border-color: #bbf7d0; }
+.certExpired { background: #f8fafc; border-color: #e2e8f0; }
+
+.certIcon { font-size: 1.8rem; }
+.certValid .certIcon { color: #16a34a; }
+.certExpired .certIcon { color: #94a3b8; }
+
+.certInfo { flex: 1; }
+.certToken { font-weight: 700; font-size: 0.95rem; color: #000000; font-family: 'Courier New', monospace; }
+.certDates { font-size: 0.8rem; color: #64748b; margin-top: 0.15rem; }
+
+.badgeValid { background: #16a34a; color: #ffffff; font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 20px; }
+.badgeExpired { background: #94a3b8; color: #ffffff; font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 20px; }
+.badgeRevoked { background: #dc2626; color: #ffffff; font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 20px; }
+
+.certRevokeBtn {
+  background: transparent;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  padding: 0.4rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.certRevokeBtn:hover {
+  background: #fef2f2;
+}
+
+.certVerifyLink {
+  color: #000000;
+  padding: 0.5rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  transition: background 0.15s;
+  text-decoration: none;
+}
+
+.certVerifyLink:hover { background: #f1f5f9; }
+
+/* ─── QR Modal ──────────────────────────────────────────────────────────────── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.certModalCard {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 2.5rem 2rem;
+  max-width: 420px;
+  width: 100%;
+  position: relative;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.modalClose {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+}
+
+.modalHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.modalHeader span { font-size: 2.5rem; color: #16a34a; }
+.modalHeader h3 { font-size: 1.3rem; font-weight: 700; color: #000000; margin: 0; }
+
+.qrCodeWrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  display: inline-block;
+}
+
+.qrCanvas {
+  display: block;
+  border-radius: 8px;
+}
+
+.certModalInfo { text-align: center; }
+
+.certModalToken {
+  font-size: 0.95rem;
+  color: #64748b;
+  margin: 0 0 0.3rem;
+  font-family: 'Courier New', monospace;
+}
+
+.certModalDate {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  margin: 0 0 1.25rem;
+}
+
+.certModalLink {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.linkInput {
+  flex: 1;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  color: #475569;
+  background: #f8fafc;
+  outline: none;
+}
+
+.copyBtn {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0.6rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: #000000;
+}
+
+.copyBtn:hover { background: #e2e8f0; }
+
+.openCertBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #000000;
+  color: #ffffff;
+  text-decoration: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: background 0.15s;
+}
+
+.openCertBtn:hover { background: #262626; }
+
+/* ─── History ───────────────────────────────────────────────────────────────── */
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.summaryCard {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.summaryCard span { font-size: 2.2rem; color: #000000; }
+.summaryCard h3 { font-size: 0.85rem; color: #64748b; margin: 0; }
+.summaryCard p { font-size: 1.2rem; font-weight: 700; color: #000000; margin: 0; }
+
+.timelineSection h2 { font-size: 1.1rem; font-weight: 700; color: #000000; margin: 0 0 1.5rem; }
+
+.noHistory { text-align: center; padding: 3rem 1rem; color: #64748b; }
+.noHistory span { font-size: 3rem; color: #000000; display: block; }
+
+.timeline { display: flex; flex-direction: column; gap: 0; }
+
+.timelineItem {
+  display: flex;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+  position: relative;
+}
+
+.timelineDot {
+  width: 10px;
+  height: 10px;
+  background: #000000;
+  border-radius: 50%;
+  margin-top: 0.3rem;
+  flex-shrink: 0;
+}
+
+.timelineBody { flex: 1; }
+.logCategory { font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+.logAction { font-size: 0.9rem; font-weight: 600; color: #000000; margin: 0.2rem 0; }
+.logDate { font-size: 0.78rem; color: #94a3b8; }
+
+/* ─── Alerts ────────────────────────────────────────────────────────────────── */
+.successAlert {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  padding: 0.8rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+.errorCard {
+  background: #ffffff;
+  border: 1px solid #fecaca;
+  border-radius: 20px;
+  padding: 3rem;
+  text-align: center;
+  max-width: 480px;
+  margin: 4rem auto;
+}
+
+.errorCard span { font-size: 3.5rem; color: #dc2626; }
+.errorCard h2 { color: #dc2626; margin: 0.5rem 0; }
+.errorCard p { color: #64748b; }
+
+.backBtn {
+  display: inline-block;
+  margin-top: 1rem;
+  background: #000000;
+  color: #ffffff;
+  padding: 0.7rem 1.25rem;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.loading { text-align: center; padding: 4rem; color: #000000; }
+
+@media (max-width: 640px) {
+  .grid2 { grid-template-columns: 1fr; }
+  .fieldFull { grid-column: span 1; }
+  .summaryGrid { grid-template-columns: 1fr; }
+  .tabsNav { gap: 0; }
+  .tabBtn { padding: 0.6rem 0.75rem; font-size: 0.82rem; }
+  .headerCard { flex-direction: column; text-align: center; }
+  .formFooter { flex-direction: column; align-items: stretch; }
+}

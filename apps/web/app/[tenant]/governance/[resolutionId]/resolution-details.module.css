@@ -1,0 +1,181 @@
+.container {
+  padding: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #000;
+  text-decoration: none;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.headerCard {
+  background: #000;
+  color: #fff;
+  border-radius: 1rem;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem 0;
+  color: #ffffff;
+}
+
+.subtitle {
+  color: #ffffff;
+  opacity: 1;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.statusBadge {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 800;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.section {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 1rem;
+  padding: 1.75rem;
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #000;
+  margin: 0 0 1rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.description {
+  color: #333;
+  line-height: 1.6;
+  font-size: 0.95rem;
+  white-space: pre-wrap;
+}
+
+.votingBox {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.voteBtn {
+  flex: 1;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  border: 2px solid #000;
+  font-size: 1.1rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  transition: transform 0.15s, background 0.15s;
+}
+
+.voteBtn:hover {
+  transform: translateY(-2px);
+}
+
+.btnFor {
+  background: #000;
+  color: #fff;
+}
+
+.btnAgainst {
+  background: #fff;
+  color: #000;
+}
+
+.btnAbstain {
+  background: #f4f4f5;
+  color: #555;
+  border-color: #ccc;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.statBox {
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.statBox h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.85rem;
+  color: #666;
+  text-transform: uppercase;
+}
+
+.statBox p {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #000;
+}
+
+.votersTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.votersTable th {
+  text-align: left;
+  padding: 0.75rem;
+  font-size: 0.8rem;
+  color: #666;
+  border-bottom: 2px solid #eee;
+  text-transform: uppercase;
+}
+
+.votersTable td {
+  padding: 0.75rem;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.closeBtn {
+  background: #000;
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.closeBtn:hover {
+  opacity: 0.85;
+}
