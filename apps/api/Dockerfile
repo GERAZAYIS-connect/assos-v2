@@ -31,7 +31,7 @@ RUN pnpm --filter=@assos/api --prod deploy /app/deploy --legacy
 
 # Copy prisma schema and re-generate client inside the deploy folder
 COPY apps/api/prisma /app/deploy/prisma
-RUN cd /app/deploy && npx prisma generate
+RUN cd /app/deploy && node_modules/.bin/prisma generate --schema=prisma/schema.prisma
 
 # Production stage
 FROM base AS runner
