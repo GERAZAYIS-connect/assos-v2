@@ -26,20 +26,30 @@ async function bootstrap() {
     }),
   );
 
-  // CORS — allow wildcard subdomains in dev (*.lvh.me)
+  // CORS — allow production domains + dev subdomains
+  const allowedOrigins = [
+    // Local dev
+    'http://localhost:3000',
+    'http://lvh.me:3000',
+    // Production custom domain
+    'https://asso-in.online',
+    'https://www.asso-in.online',
+  ];
+
   app.enableCors({
     origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-      if (
-        !origin ||
+      // Allow server-to-server (no origin) or dev tools
+      if (!origin) return callback(null, true);
+
+      const isAllowed =
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.asso-in.online') ||
         origin.endsWith('.lvh.me:3000') ||
-        origin === 'http://lvh.me:3000' ||
-        origin === 'http://localhost:3000' ||
-        origin.includes('127.0.0.1')
-      ) {
-        callback(null, true);
-      } else {
-        callback(null, true); // Dev mode default
-      }
+        origin.endsWith('.vercel.app') ||
+        origin.endsWith('.onrender.com') ||
+        origin.includes('127.0.0.1');
+
+      callback(null, isAllowed);
     },
     credentials: true,
   });
