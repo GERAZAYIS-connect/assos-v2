@@ -22,7 +22,7 @@ COPY apps/api/ ./apps/api/
 
 # Build shared package first, then generate prisma, then build the api
 RUN pnpm --filter @assos/shared build
-RUN pnpm --filter @assos/api prisma generate
+RUN pnpm --filter @assos/api exec prisma generate
 RUN pnpm --filter @assos/api build
 
 # Prune dev dependencies for production stage
