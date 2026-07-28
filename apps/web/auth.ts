@@ -56,8 +56,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: false,
-        domain: process.env.NODE_ENV === 'production' ? '.assos.cm' : '.lvh.me',
+        secure: process.env.NODE_ENV === 'production',
+        domain: (() => {
+          const domain = process.env.NEXT_PUBLIC_PLATFORM_DOMAIN;
+          if (domain) return domain;
+          // Fallback to local dev
+          if (process.env.NODE_ENV === 'development') return '.lvh.me';
+          // On Vercel, return undefined to default to current hostname
+          return undefined;
+        })(),
       },
     },
   },

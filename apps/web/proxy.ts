@@ -20,18 +20,31 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Extract subdomain (support *.lvh.me and *.assos.cm)
-  let currentHost = hostname
-    .replace(':3000', '')
-    .replace('.lvh.me', '')
-    .replace('.assos.cm', '')
-    .toLowerCase();
+  // Determine if we are running locally, on Vercel, or on custom domain
+  const isLocal = hostname.includes('localhost') || hostname.includes('lvh.me');
+  const isVercel = hostname.includes('vercel.app');
+
+  let rootDomain = 'assos.cm';
+  let currentHost = '';
+
+  if (isLocal) {
+    rootDomain = hostname.includes('lvh.me') ? 'lvh.me:3000' : 'localhost:3000';
+    currentHost = hostname.replace(':3000', '').replace('.lvh.me', '').toLowerCase();
+  } else if (isVercel) {
+    rootDomain = hostname; // On Vercel, root domain is the deployment hostname itself
+    currentHost = 'www'; // Skip subdomain rewrites on raw Vercel domains
+  } else {
+    // Custom domain production (e.g., assos.cm)
+    rootDomain = process.env.NEXT_PUBLIC_PLATFORM_DOMAIN || 'assos.cm';
+    // Remove the leading dot if configured as .domain.com
+    const cleanRoot = rootDomain.startsWith('.') ? rootDomain.substring(1) : rootDomain;
+    currentHost = hostname.replace(`.${cleanRoot}`, '').toLowerCase();
+  }
 
   // Authentication check for protected routes
   const hasToken = request.cookies.has('next-auth.session-token') || request.cookies.has('__Secure-next-auth.session-token');
   if (!hasToken) {
     const protocol = request.headers.get('x-forwarded-proto') || 'http';
-    const rootDomain = hostname.includes('lvh.me') ? 'lvh.me:3000' : 'assos.cm';
     const loginUrl = new URL('/login', `${protocol}://${rootDomain}`);
     // Optionally append callback URL
     loginUrl.searchParams.set('callbackUrl', request.url);
@@ -39,7 +52,13 @@ export function proxy(request: NextRequest) {
   }
 
   // Exclude main domains / localhost
-  if (currentHost === 'localhost' || currentHost === 'lvh.me' || currentHost === 'assos' || currentHost === 'www') {
+  if (
+    currentHost === 'localhost' ||
+    currentHost === 'lvh.me' ||
+    currentHost === 'assos' ||
+    currentHost === 'www' ||
+    currentHost === rootDomain.replace(':3000', '')
+  ) {
     return NextResponse.next();
   }
 
