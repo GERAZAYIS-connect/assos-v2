@@ -32,15 +32,7 @@ export default function LoginPage() {
           const assocRes = await fetch('/api/backend/associations/mine');
           if (assocRes.ok) {
             const list = await assocRes.json();
-              const host = window.location.host;
-              const isLocal = host.includes('localhost') || host.includes('lvh.me');
-              const protocol = window.location.protocol;
-              const rootDomain = process.env.NEXT_PUBLIC_PLATFORM_DOMAIN || 'asso-in.online';
-
-              const target = isLocal
-                ? `${protocol}//${list[0].slug}.lvh.me:3000/dashboard`
-                : `${protocol}//${list[0].slug}.${rootDomain}/dashboard`;
-              window.location.href = target;
+              window.location.href = `/${list[0].slug}/dashboard`;
               return;
             } else if (Array.isArray(list) && list.length > 1) {
               router.push('/select-association');

@@ -59,8 +59,8 @@ export class InviteMemberUseCase {
     const domain = process.env.PLATFORM_DOMAIN || 'asso-in.online';
     const isDev = process.env.NODE_ENV === 'development';
     const protocol = isDev ? 'http' : 'https';
-    const port = isDev ? ':3000' : '';
-    const inviteUrl = `${protocol}://${slug}.${domain}${port}/invite/${token}`;
+    const host = isDev ? 'localhost:3000' : domain;
+    const inviteUrl = `${protocol}://${host}/invite/${token}`;
 
     return {
       invitationId: invitation.id,

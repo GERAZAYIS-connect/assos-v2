@@ -105,17 +105,8 @@ export default function CreateAssociationPage() {
         }
       } catch {}
 
-      // Redirect to the tenant subdomain dashboard
-      const host = window.location.host;
-      const isLocal = host.includes('localhost') || host.includes('lvh.me');
-      const protocol = window.location.protocol;
-      const rootDomain = process.env.NEXT_PUBLIC_PLATFORM_DOMAIN || 'asso-in.online';
-
-      const targetDomain = isLocal
-        ? `${protocol}//${data.slug}.lvh.me:3000/dashboard`
-        : `${protocol}//${data.slug}.${rootDomain}/dashboard`;
-
-      window.location.href = targetDomain;
+      // Redirect to the tenant dashboard route
+      window.location.href = `/${data.slug}/dashboard`;
     } catch (err: any) {
       setErrorMsg(err.message || 'Une erreur est survenue.');
       setLoading(false);

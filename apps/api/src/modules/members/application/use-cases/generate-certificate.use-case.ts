@@ -47,8 +47,8 @@ export class GenerateCertificateUseCase {
     const domain = process.env.PLATFORM_DOMAIN || 'asso-in.online';
     const isDev = process.env.NODE_ENV === 'development';
     const protocol = isDev ? 'http' : 'https';
-    const port = isDev ? ':3000' : '';
-    const verificationUrl = `${protocol}://${command.associationSlug}.${domain}${port}/verify/certificate/${cert.token}`;
+    const host = isDev ? 'localhost:3000' : domain;
+    const verificationUrl = `${protocol}://${host}/verify/certificate/${cert.token}`;
 
     return {
       certificateId: cert.id,

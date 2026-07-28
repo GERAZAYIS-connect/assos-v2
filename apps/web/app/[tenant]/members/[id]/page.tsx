@@ -803,11 +803,7 @@ export default function MemberDetailPage() {
                       </button>
                     )}
                     <a
-                      href={
-                        typeof window !== 'undefined'
-                          ? `${window.location.protocol}//${tenantSlug}.${window.location.host.includes('localhost') || window.location.host.includes('lvh.me') ? 'lvh.me:3000' : (process.env.NEXT_PUBLIC_PLATFORM_DOMAIN || 'asso-in.online')}/verify/certificate/${cert.token}`
-                          : `/verify/certificate/${cert.token}`
-                      }
+                      href={`/verify/certificate/${cert.token}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={styles.certVerifyLink}
