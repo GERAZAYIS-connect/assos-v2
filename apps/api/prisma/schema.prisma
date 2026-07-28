@@ -1,0 +1,1012 @@
+// =============================================================================
+// Assos 2.0 — Prisma Schema
+// Database: SQLite (Local Development)
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+enum PlatformRole {
+  SUPER_ADMIN
+  CO_ADMIN
+}
+
+enum AssociationRole {
+  PRESIDENT
+  TREASURER
+  SECRETARY
+  CENSOR
+  MEMBER
+}
+
+enum MemberStatus {
+  ACTIVE
+  SUSPENDED
+  EXPELLED
+}
+
+enum SubscriptionPlan {
+  DISCOVERY
+  ESSENTIAL
+  PRO
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  ARCHIVED
+}
+
+enum CaisseType {
+  MAIN
+  COLLECTIVE_SAVINGS
+  INDIVIDUAL_SAVINGS
+  THEMATIC_SAVINGS
+  SCHOOL_BANK
+  EMERGENCY
+  TONTINE
+}
+
+enum TontineType {
+  FIXED_ORDER
+  AUCTION
+  RANDOM
+  MULTI_SHARES
+  SOCIAL
+}
+
+enum LoanStatus {
+  PENDING
+  AWAITING_URGENT_DECISION
+  APPROVED
+  REJECTED
+  DISBURSED
+  COMPLETED
+  DEFAULTED
+}
+
+enum SanctionStatus {
+  PENDING
+  PAID
+  CANCELLED
+  EXCUSED
+}
+
+enum SanctionSeverity {
+  MINOR
+  MEDIUM
+  SEVERE
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER
+  ADJUSTMENT
+}
+
+
+enum TransactionStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  TIMEOUT
+  ANOMALY
+}
+
+
+enum AuditCategory {
+  AUTH
+  ASSOCIATION
+  MEMBER
+  TREASURY
+  LOAN
+  TONTINE
+  SANCTION
+  SUBSCRIPTION
+  PLATFORM
+}
+
+enum Currency {
+  XAF
+  XOF
+  EUR
+  USD
+  GBP
+}
+
+enum Language {
+  fr
+  en
+}
+
+// =============================================================================
+// USERS & AUTH
+// =============================================================================
+
+model User {
+  id                String              @id @default(cuid())
+  email             String?             @unique
+  phone             String?             @unique
+  passwordHash      String
+  platformRole      PlatformRole?
+  isEmailVerified   Boolean             @default(false)
+  isPhoneVerified   Boolean             @default(false)
+  twoFactorEnabled  Boolean             @default(false)
+  twoFactorSecret   String?
+  backupCodes       String?
+  preferredLanguage Language            @default(fr)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  deletedAt         DateTime?
+
+  // Relations
+  refreshTokens     RefreshToken[]
+  memberships       AssociationMember[]
+  auditLogs         AuditLog[]          @relation("ActorLogs")
+  transactionsCreated   Transaction[]   @relation("TransactionCreator")
+  transactionsApproved  Transaction[]   @relation("TransactionApprover")
+  reconciliations       BankReconciliation[] @relation("ReconciliationCreator")
+  notifications         Notification[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id          String    @id @default(cuid())
+  userId      String
+  token       String    @unique
+  deviceInfo  String?
+  isTrusted   Boolean   @default(false)
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// =============================================================================
+// ASSOCIATIONS (TENANT ROOT)
+// =============================================================================
+
+model Association {
+  id                 String              @id @default(cuid())
+  name               String
+  slug               String              @unique
+  logoUrl            String?
+  currency           Currency            @default(XAF)
+  country            String              @default("CM")
+  language           Language            @default(fr)
+  branding           String?
+  legalStatus        String?
+  registrationRef    String?
+  plan               SubscriptionPlan    @default(DISCOVERY)
+  subscriptionStatus SubscriptionStatus  @default(ACTIVE)
+  trialEndsAt        DateTime?
+  subscriptionEndsAt DateTime?
+  settings           String?
+  motto              String?
+  savingsInterestRate Float            @default(0)
+  joiningFee         Float             @default(0)
+  alertThresholds    String?
+  isActive           Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  // Relations
+  members            AssociationMember[]
+  invitations        Invitation[]
+  certificates       MemberCertificate[]
+  auditLogs          AuditLog[]
+  caisses            Caisse[]
+  transactions       Transaction[]
+  budgets            Budget[]
+  loans              Loan[]
+  sanctions          Sanction[]
+  tontines           Tontine[]
+  meetings           Meeting[]
+  resolutions        Resolution[]
+  annualBudgets      AnnualBudget[]
+  profitDistributions ProfitDistribution[]
+  notifications      Notification[]
+  equipments         Equipment[]
+  equipmentRentals   EquipmentRental[]
+
+  @@map("associations")
+}
+
+model AssociationMember {
+  id            String             @id @default(cuid())
+  associationId String
+  userId        String
+  role          AssociationRole    @default(MEMBER)
+  status        MemberStatus       @default(ACTIVE)
+  memberNumber  String?
+  joinedAt      DateTime           @default(now())
+  suspendedAt   DateTime?
+  expelledAt    DateTime?
+  proxyUserId   String?
+  joiningFeePaidAt DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  association   Association        @relation(fields: [associationId], references: [id], onDelete: Cascade)
+  user          User               @relation(fields: [userId], references: [id])
+  profile       MemberProfile?
+  certificates  MemberCertificate[]
+  invitations   Invitation[]       @relation("InvitedByMember")
+  transactions  Transaction[]
+  loans         Loan[]
+  sanctions     Sanction[]
+  tontineMemberships   TontineMember[]
+  wonTontineRounds     TontineRound[]
+  tontineContributions TontineContribution[]
+  meetingAttendances   MeetingAttendance[]
+  resolutionsWon       Resolution[]        @relation("ElectedMember")
+  resolutionsCandidated Resolution[]     @relation("CandidateMember")
+  votes                CastVote[]
+  dividendItems        DividendItem[]
+  guaranteedLoans      Loan[]              @relation("LoanGuarantor")
+
+  @@unique([associationId, userId])
+  @@index([associationId])
+  @@index([userId])
+  @@map("association_members")
+}
+
+model MemberProfile {
+  id                    String            @id @default(cuid())
+  memberId              String            @unique
+  firstName             String?
+  lastName              String?
+  photoUrl              String?
+  idCardType            String?
+  idCardNumber          String?
+  idCardUrl             String?
+  address               String?
+  profession            String?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  proxyName             String?
+  proxyPhone            String?
+  proxyNotes            String?
+  proxyIsActive         Boolean           @default(false)
+  proxyExpiresAt        DateTime?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  member                AssociationMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@map("member_profiles")
+}
+
+model Invitation {
+  id                String            @id @default(cuid())
+  associationId     String
+  invitedByMemberId String
+  email             String?
+  phone             String?
+  role              AssociationRole   @default(MEMBER)
+  token             String            @unique
+  expiresAt         DateTime
+  usedAt            DateTime?
+  createdAt         DateTime          @default(now())
+
+  association       Association       @relation(fields: [associationId], references: [id], onDelete: Cascade)
+  invitedBy         AssociationMember @relation("InvitedByMember", fields: [invitedByMemberId], references: [id])
+
+  @@index([associationId])
+  @@index([token])
+  @@map("invitations")
+}
+
+model MemberCertificate {
+  id              String            @id @default(cuid())
+  associationId   String
+  associationName String?
+  memberId        String
+  token           String            @unique
+  qrCodeUrl       String?
+  pdfUrl          String?
+  issuedAt        DateTime          @default(now())
+  expiresAt       DateTime?
+  revokedAt       DateTime?
+  revokedReason   String?
+
+  association   Association       @relation(fields: [associationId], references: [id], onDelete: Cascade)
+  member        AssociationMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([associationId])
+  @@index([memberId])
+  @@index([token])
+  @@map("member_certificates")
+}
+
+// =============================================================================
+// TREASURY (DOMAINE 3)
+// =============================================================================
+
+model Caisse {
+  id              String       @id @default(cuid())
+  associationId   String
+  type            CaisseType   @default(MAIN)
+  name            String
+  balance         Float        @default(0)
+  isLoanable      Boolean      @default(false)
+  isBankAccount   Boolean      @default(false)
+  accountDetails  String?      // JSON string for bank info if isBankAccount = true
+  isActive        Boolean      @default(true)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  association     Association  @relation(fields: [associationId], references: [id], onDelete: Cascade)
+  transactionsOut Transaction[] @relation("SourceCaisse")
+  transactionsIn  Transaction[] @relation("DestinationCaisse")
+  budgets         Budget[]
+  budgetItems     BudgetItem[]
+  reconciliations BankReconciliation[]
+  loans           Loan[]
+  sanctions       Sanction[]
+  tontines        Tontine[]
+
+  @@index([associationId])
+  @@map("caisses")
+}
+
+model Transaction {
+  id                  String             @id @default(cuid())
+  associationId       String
+  caisseId            String
+  destinationCaisseId String?
+  type                TransactionType
+  amount              Float
+  reference           String             @unique // REC-YYYYMMDD-XXXX
+  description         String?
+  memberId            String?            // If linked to a member
+  status              TransactionStatus  @default(PENDING)
+  receiptUrl          String?
+  createdByUserId     String?
+  approvedByUserId    String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  association         Association        @relation(fields: [associationId], references: [id], onDelete: Cascade)
+  caisse              Caisse             @relation("SourceCaisse", fields: [caisseId], references: [id], onDelete: Restrict)
+  destinationCaisse   Caisse?            @relation("DestinationCaisse", fields: [destinationCaisseId], references: [id], onDelete: Restrict)
+  member              AssociationMember? @relation(fields: [memberId], references: [id], onDelete: SetNull)
+  createdBy           User?              @relation("TransactionCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  approvedBy          User?              @relation("TransactionApprover", fields: [approvedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([associationId])
+  @@index([caisseId])
+  @@index([memberId])
+  @@index([reference])
+  @@map("transactions")
+}
+
+enum BudgetStatus {
+  DRAFT
+  APPROVED
+  CLOSED
+}
+
+enum BudgetItemType {
+  INCOME
+  EXPENSE
+}
+
+enum DistributionStatus {
+  SIMULATED
+  EXECUTED
+}
+
+enum DividendStatus {
+  PENDING
+  PAID
+}
+
+model Budget {
+  id            String    @id @default(cuid())
+  associationId String
+  caisseId      String
+  category      String
+  limitAmount   Float
+  periodStart   DateTime
+  periodEnd     DateTime
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  association   Association @relation(fields: [associationId], references: [id], onDelete: Cascade)
+  caisse        Caisse      @relation(fields: [caisseId], references: [id], onDelete: Cascade)
+
+  @@index([associationId])
+  @@index([caisseId])
+  @@map("budgets")
+}
+
+model AnnualBudget {
+  id            String         @id @default(cuid())
+  associationId String
+  year          Int
+  title         String
+  status        BudgetStatus   @default(DRAFT)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  association   Association    @relation(fields: [associationId], references: [id], onDelete: Cascade)
+  items         BudgetItem[]
+  distributions ProfitDistribution[]
+
+  @@unique([associationId, year])
+  @@index([associationId])
+  @@map("annual_budgets")
+}
+
+model BudgetItem {
+  id             String         @id @default(cuid())
+  annualBudgetId String
+  caisseId       String?
+  type           BudgetItemType @default(EXPENSE)
+  category       String
+  estimatedAmount Float
+  description    String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  annualBudget   AnnualBudget   @relation(fields: [annualBudgetId], references: [id], onDelete: Cascade)
+  caisse         Caisse?        @relation(fields: [caisseId], references: [id], onDelete: SetNull)
+
+  @@index([annualBudgetId])
+  @@index([caisseId])
+  @@map("budget_items")
+}
+
+model ProfitDistribution {
+  id                 String             @id @default(cuid())
+  associationId      String
+  annualBudgetId     String?
+  year               Int
+  baseUnitAmount     Float              @default(5000)
+  partyExpenses      Float              @default(0)
+  retainedReserve    Float              @default(0)
+  netProfit          Float              @default(0)
+  distributableProfit Float             @default(0)
+  totalMonthSavings  Float              @default(0)
+  monthlyGainCoeff   Float              @default(0)
+  status             DistributionStatus @default(SIMULATED)
+  executedAt         DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  association        Association        @relation(fields: [associationId], references: [id], onDelete: Cascade)
+  annualBudget       AnnualBudget?      @relation(fields: [annualBudgetId], references: [id], onDelete: SetNull)
+  items              DividendItem[]
+
+  @@index([associationId])
+  @@map("profit_distributions")
+}
+
+model DividendItem {
+  id             String             @id @default(cuid())
+  distributionId String
+  memberId       String
+  totalSavings   Float              @default(0)
+  monthSavings   Float              @default(0)
+  dividendAmount Float              @default(0)
+  totalPayout    Float              @default(0)
+  status         DividendStatus     @default(PENDING)
+  paidAt         DateTime?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  distribution   ProfitDistribution @relation(fields: [distributionId], references: [id], onDelete: Cascade)
+  member         AssociationMember  @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([distributionId])
+  @@index([memberId])
+  @@map("dividend_items")
+}
+
+model BankReconciliation {
+  id             String    @id @default(cuid())
+  caisseId       String
+  statementDate  DateTime
+  systemBalance  Float
+  actualBalance  Float
+  difference     Float
+  isResolved     Boolean   @default(false)
+  createdByUserId String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  caisse         Caisse    @relation(fields: [caisseId], references: [id], onDelete: Cascade)
+  createdBy      User?     @relation("ReconciliationCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([caisseId])
+  @@map("bank_reconciliations")
+}
+
+// =============================================================================
+// AUDIT LOG (immutable)
+// =============================================================================
+
+model AuditLog {
+  id            String        @id @default(cuid())
+  associationId String?
+  actorId       String?
+  category      AuditCategory
+  action        String
+  targetType    String?
+  targetId      String?
+  metadata      String?
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime      @default(now())
+
+  association   Association?  @relation(fields: [associationId], references: [id])
+  actor         User?         @relation("ActorLogs", fields: [actorId], references: [id])
+
+  @@index([associationId])
+  @@index([actorId])
+  @@index([category])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// =============================================================================
+// LOANS (DOMAINE 4)
+// =============================================================================
+
+model Loan {
+  id               String            @id @default(cuid())
+  associationId    String
+  borrowerMemberId String
+  guarantorMemberId String?
+  caisseId         String
+  amount           Float
+  interestRate     Float             @default(0)
+  dailyPenaltyRate Float             @default(0.001)
+  totalToRepay     Float
+  balanceRemaining Float
+  status           LoanStatus        @default(PENDING)
+  reason           String?
+  startDate        DateTime?
+  dueDate          DateTime?
+  approvedByUserId String?
+  approvedAt       DateTime?
+  informalReminderAt DateTime?
+  informalReminderNotes String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  association      Association       @relation(fields: [associationId], references: [id], onDelete: Cascade)
+  borrower         AssociationMember @relation(fields: [borrowerMemberId], references: [id], onDelete: Cascade)
+  guarantor        AssociationMember? @relation("LoanGuarantor", fields: [guarantorMemberId], references: [id], onDelete: SetNull)
+  caisse           Caisse            @relation(fields: [caisseId], references: [id], onDelete: Restrict)
+  repayments       LoanRepayment[]
+
+  @@index([associationId])
+  @@index([borrowerMemberId])
+  @@index([caisseId])
+  @@map("loans")
+}
+
+model LoanRepayment {
+  id              String   @id @default(cuid())
+  loanId          String
+  amount          Float
+  transactionId   String?
+  notes           String?
+  paidAt          DateTime @default(now())
+  createdByUserId String?
+
+  loan            Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
+
+  @@index([loanId])
+  @@map("loan_repayments")
+}
+
+// =============================================================================
+// SANCTIONS & AMENDES (DOMAINE 5)
+// =============================================================================
+
+model Sanction {
+  id               String            @id @default(cuid())
+  associationId    String
+  memberId         String
+  caisseId         String?
+  title            String
+  reason           String?
+  fineAmount       Float             @default(0)
+  status           SanctionStatus    @default(PENDING)
+  severity         SanctionSeverity  @default(MINOR)
+  issuedByUserId   String?
+  paidAt           DateTime?
+  transactionId    String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  association      Association       @relation(fields: [associationId], references: [id], onDelete: Cascade)
+  member           AssociationMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  caisse           Caisse?           @relation(fields: [caisseId], references: [id], onDelete: SetNull)
+
+  @@index([associationId])
+  @@index([memberId])
+  @@index([status])
+  @@map("sanctions")
+}
+
+// =============================================================================
+// TONTINES (DOMAINE 6)
+// =============================================================================
+
+enum TontineStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum TontineFrequency {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+}
+
+enum RoundStatus {
+  OPEN
+  CLOSED
+}
+
+model Tontine {
+  id               String            @id @default(cuid())
+  associationId    String
+  caisseId         String?
+  name             String
+  description      String?
+  type             TontineType       @default(FIXED_ORDER)
+  amountPerRound   Float             // Montant par membre et par tour
+  frequency        TontineFrequency  @default(MONTHLY)
+  status           TontineStatus     @default(DRAFT)
+  startDate        DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  association      Association       @relation(fields: [associationId], references: [id], onDelete: Cascade)
+  caisse           Caisse?           @relation(fields: [caisseId], references: [id], onDelete: SetNull)
+  members          TontineMember[]
+  rounds           TontineRound[]
+
+  @@index([associationId])
+  @@map("tontines")
+}
+
+model TontineMember {
+  id               String            @id @default(cuid())
+  tontineId        String
+  memberId         String
+  position         Int?              // Ordre de passage
+  joinedAt         DateTime          @default(now())
+
+  tontine          Tontine           @relation(fields: [tontineId], references: [id], onDelete: Cascade)
+  member           AssociationMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([tontineId, memberId])
+  @@index([tontineId])
+  @@index([memberId])
+  @@map("tontine_members")
+}
+
+model TontineRound {
+  id                  String               @id @default(cuid())
+  tontineId           String
+  roundNumber         Int
+  dueDate             DateTime
+  beneficiaryMemberId String?
+  auctionAmount       Float?               // Montant de l'enchère gagnante si tontine à enchères
+  potAmount           Float                @default(0) // Somme distribuée au gagnant
+  status              RoundStatus          @default(OPEN)
+  disbursedAt         DateTime?
+  transactionId       String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  tontine             Tontine              @relation(fields: [tontineId], references: [id], onDelete: Cascade)
+  beneficiary         AssociationMember?   @relation(fields: [beneficiaryMemberId], references: [id], onDelete: SetNull)
+  contributions       TontineContribution[]
+
+  @@index([tontineId])
+  @@index([beneficiaryMemberId])
+  @@map("tontine_rounds")
+}
+
+model TontineContribution {
+  id               String       @id @default(cuid())
+  roundId          String
+  memberId         String
+  amount           Float
+  isPaid           Boolean      @default(false)
+  paidAt           DateTime?
+  transactionId    String?
+
+  round            TontineRound @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  member           AssociationMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([roundId, memberId])
+  @@index([roundId])
+  @@index([memberId])
+  @@map("tontine_contributions")
+}
+
+// ==========================================
+// MODULE 8: REUNIONS & PROCES-VERBAUX (PV)
+// ==========================================
+
+enum MeetingType {
+  ORDINARY
+  EXTRAORDINARY
+  BUREAU
+  TONTINE_SESSION
+}
+
+enum MeetingStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  EXCUSED
+  LATE
+}
+
+model Meeting {
+  id                  String              @id @default(cuid())
+  associationId       String
+  title               String
+  description         String?
+  type                MeetingType         @default(ORDINARY)
+  status              MeetingStatus       @default(SCHEDULED)
+  location            String?
+  scheduledAt         DateTime
+  startedAt           DateTime?
+  endedAt             DateTime?
+  agenda              String?
+  minutes             String?
+  autoSanctionAbsence Boolean             @default(false)
+  absenceFineAmount   Float               @default(0)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  association         Association         @relation(fields: [associationId], references: [id], onDelete: Cascade)
+  attendances         MeetingAttendance[]
+  resolutions         Resolution[]
+
+  @@index([associationId])
+  @@index([scheduledAt])
+  @@map("meetings")
+}
+
+model MeetingAttendance {
+  id            String           @id @default(cuid())
+  meetingId     String
+  memberId      String
+  status        AttendanceStatus @default(ABSENT)
+  arrivalTime   DateTime?
+  notes         String?
+  sanctionId    String?
+
+  meeting       Meeting           @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  member        AssociationMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([meetingId, memberId])
+  @@index([meetingId])
+  @@index([memberId])
+  @@map("meeting_attendances")
+}
+
+// ====================================================
+// MODULE 9: GOUVERNANCE, ASSEMBLEES GENERALES & VOTES
+// ====================================================
+
+enum ResolutionCategory {
+  GENERAL_PROPOSAL
+  STATUTE_AMENDMENT
+  BUREAU_ELECTION
+}
+
+enum ResolutionStatus {
+  DRAFT
+  OPEN
+  CLOSED
+  PASSED
+  REJECTED
+}
+
+enum VoteType {
+  SECRET_BALLOT
+  OPEN_VOTE
+}
+
+enum VoteChoice {
+  FOR
+  AGAINST
+  ABSTAIN
+}
+
+model Resolution {
+  id                  String             @id @default(cuid())
+  associationId       String
+  meetingId           String?
+  title               String
+  description         String?
+  category            ResolutionCategory @default(GENERAL_PROPOSAL)
+  status              ResolutionStatus   @default(OPEN)
+  voteType            VoteType           @default(OPEN_VOTE)
+  quorumThreshold     Float              @default(50)
+  majorityThreshold   Float              @default(50)
+  targetRole          AssociationRole?
+  candidateMemberId   String?
+  electedMemberId     String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  association         Association        @relation(fields: [associationId], references: [id], onDelete: Cascade)
+  meeting             Meeting?           @relation(fields: [meetingId], references: [id], onDelete: SetNull)
+  electedMember       AssociationMember? @relation("ElectedMember", fields: [electedMemberId], references: [id], onDelete: SetNull)
+  candidateMember     AssociationMember? @relation("CandidateMember", fields: [candidateMemberId], references: [id], onDelete: SetNull)
+  votes               CastVote[]
+
+  @@index([associationId])
+  @@index([status])
+  @@map("resolutions")
+}
+
+model CastVote {
+  id                String            @id @default(cuid())
+  resolutionId      String
+  voterMemberId     String
+  choice            VoteChoice        @default(FOR)
+  candidateMemberId String?
+  votedAt           DateTime          @default(now())
+
+  resolution        Resolution        @relation(fields: [resolutionId], references: [id], onDelete: Cascade)
+  voter             AssociationMember @relation(fields: [voterMemberId], references: [id], onDelete: Cascade)
+
+  @@unique([resolutionId, voterMemberId])
+  @@index([resolutionId])
+  @@index([voterMemberId])
+  @@map("cast_votes")
+}
+
+// =============================================================================
+// NOTIFICATIONS & RELANCES (DOMAINE 11)
+// =============================================================================
+
+enum NotificationType {
+  TONTINE_REMINDER
+  LOAN_REPAYMENT_DUE
+  MEETING_CONVOCATION
+  GOVERNANCE_ALERT
+  LOAN_APPROVAL
+  PAYMENT_RECEIPT
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  SMS
+  WHATSAPP
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
+  ARCHIVED
+}
+
+model Notification {
+  id            String              @id @default(cuid())
+  associationId String
+  userId        String
+  type          NotificationType
+  channel       NotificationChannel @default(IN_APP)
+  title         String
+  message       String
+  linkUrl       String?
+  status        NotificationStatus  @default(UNREAD)
+  sentAt        DateTime            @default(now())
+  readAt        DateTime?
+
+  association   Association         @relation(fields: [associationId], references: [id], onDelete: Cascade)
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([associationId])
+  @@index([userId])
+  @@index([status])
+  @@map("notifications")
+}
+
+enum EquipmentCondition {
+  NEW
+  GOOD
+  REPAIR_NEEDED
+  OUT_OF_SERVICE
+}
+
+enum RentalStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model Equipment {
+  id             String             @id @default(cuid())
+  associationId  String
+  name           String
+  category       String             @default("MATERIEL")
+  quantity       Int                @default(1)
+  availableQty   Int                @default(1)
+  condition      EquipmentCondition @default(GOOD)
+  purchaseValue  Float              @default(0)
+  rentalRateDay  Float              @default(0)
+  notes          String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  association    Association        @relation(fields: [associationId], references: [id], onDelete: Cascade)
+  rentals        EquipmentRental[]
+
+  @@index([associationId])
+  @@map("equipments")
+}
+
+model EquipmentRental {
+  id             String        @id @default(cuid())
+  associationId  String
+  equipmentId    String
+  renterName     String
+  renterPhone    String?
+  quantity       Int           @default(1)
+  startDate      DateTime
+  endDate        DateTime
+  totalAmount    Float
+  advancePaid    Float         @default(0)
+  balanceDue     Float         @default(0)
+  status         RentalStatus  @default(CONFIRMED)
+  notes          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  association    Association   @relation(fields: [associationId], references: [id], onDelete: Cascade)
+  equipment      Equipment     @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  @@index([associationId])
+  @@index([equipmentId])
+  @@map("equipment_rentals")
+}
+
+
+
+
+

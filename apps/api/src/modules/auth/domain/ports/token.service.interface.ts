@@ -1,0 +1,20 @@
+export interface ITokenService {
+  generateAccessToken(payload: TokenPayload): string;
+  generateRefreshToken(payload: TokenPayload): string;
+  verifyAccessToken(token: string): TokenPayload;
+  verifyRefreshToken(token: string): TokenPayload;
+}
+
+export interface TokenPayload {
+  sub: string;         // user id
+  email?: string;
+  phone?: string;
+  platformRole?: string;
+}
+
+export interface AuthTokens {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export const TOKEN_SERVICE = Symbol('ITokenService');
