@@ -6,6 +6,7 @@ RUN corepack enable
 
 # Builder stage
 FROM base AS builder
+ENV CI=true
 WORKDIR /app
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY packages/shared/package.json ./packages/shared/
