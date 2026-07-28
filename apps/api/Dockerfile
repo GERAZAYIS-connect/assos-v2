@@ -36,6 +36,7 @@ ENV NODE_ENV=production
 
 # Copy standalone deployed files
 COPY --from=builder /app/deploy ./
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 EXPOSE 4000
 CMD ["node", "dist/main"]
