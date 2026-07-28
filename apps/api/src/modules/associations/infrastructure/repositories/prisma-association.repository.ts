@@ -87,6 +87,9 @@ export class PrismaAssociationRepository implements IAssociationRepository {
     const now = new Date();
     const matricule = MemberNumber.generate(data.name || data.slug, now);
 
+    const trialEndsAt = new Date();
+    trialEndsAt.setDate(trialEndsAt.getDate() + 30);
+
     const record = await this.prisma.association.create({
       data: {
         name: data.name,
@@ -94,6 +97,8 @@ export class PrismaAssociationRepository implements IAssociationRepository {
         currency: (data.currency ?? 'XAF') as Currency,
         country: data.country ?? 'CM',
         language: (data.language ?? 'fr') as Language,
+        subscriptionStatus: 'TRIALING',
+        trialEndsAt,
         // Automatically make the creator a PRESIDENT member with profile
         members: {
           create: {
