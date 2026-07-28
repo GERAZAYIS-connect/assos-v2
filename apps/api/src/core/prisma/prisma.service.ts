@@ -11,12 +11,25 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
   constructor() {
     const rawUrl = process.env.DATABASE_URL || 'file:./dev.db';
-    const dbPath = rawUrl.replace(/^file:/, '');
-    const absolutePath = path.isAbsolute(dbPath) ? dbPath : path.join(process.cwd(), dbPath);
-    const fileUrl = `file:${absolutePath.replace(/\\/g, '/')}`;
+    let url = rawUrl;
+    let authToken = process.env.DATABASE_AUTH_TOKEN || undefined;
 
-    const libsql = createClient({ url: fileUrl });
-    const adapter = new PrismaLibSql({ url: fileUrl, client: libsql } as any);
+    const isRemote =
+      rawUrl.startsWith('libsql://') ||
+      rawUrl.startsWith('wss://') ||
+      rawUrl.startsWith('https://') ||
+      rawUrl.startsWith('http://');
+
+    if (!isRemote) {
+      const dbPath = rawUrl.replace(/^file:/, '');
+      const absolutePath = path.isAbsolute(dbPath) ? dbPath : path.join(process.cwd(), dbPath);
+      url = `file:${absolutePath.replace(/\\/g, '/')}`;
+    }
+
+    this.logger.log(`Initializing Prisma Client with URL: ${isRemote ? 'Remote LibSQL Database' : url}`);
+
+    const libsql = createClient({ url, authToken });
+    const adapter = new PrismaLibSql({ url, client: libsql } as any);
 
     super({
       adapter,

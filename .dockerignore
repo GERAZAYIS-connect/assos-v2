@@ -1,0 +1,17 @@
+node_modules
+**/node_modules
+dist
+**/dist
+.next
+**/.next
+.turbo
+**/.turbo
+.env
+.env.*
+.git
+.gitignore
+README.md
+cahier-des-charges-final-monassociation.md
+pnpm-debug.log*
+npm-debug.log*
+yarn-error.log*
