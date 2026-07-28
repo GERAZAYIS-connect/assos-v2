@@ -93,23 +93,28 @@ export default function AcceptInvitationPage() {
         const slug = acceptData.associationSlug || targetSlug || info?.associationSlug || 'solidarite';
         setSuccessMsg('Félicitations ! Votre compte est prêt et vous êtes maintenant membre de l’association.');
         setTimeout(() => {
-          const host = window.location.host;
-          const isLvh = host.includes('lvh.me');
-          const target = isLvh
-            ? `http://${slug}.lvh.me:3000/dashboard`
-            : `/${slug}/dashboard`;
-          window.location.href = target;
-        }, 1500);
+        const host = window.location.host;
+        const isLocal = host.includes('localhost') || host.includes('lvh.me');
+        const protocol = window.location.protocol;
+        const rootDomain = process.env.NEXT_PUBLIC_PLATFORM_DOMAIN || 'asso-in.online';
+
+        const target = isLocal
+          ? `${protocol}//${slug}.lvh.me:3000/dashboard`
+          : `${protocol}//${slug}.${rootDomain}/dashboard`;
+        window.location.href = target;
       } else {
         // Fallback for dev mode preview
         const slug = targetSlug || info?.associationSlug || 'solidarite';
         setSuccessMsg('Compte créé avec succès ! Intégration à l’association en cours...');
         setTimeout(() => {
           const host = window.location.host;
-          const isLvh = host.includes('lvh.me');
-          const target = isLvh
-            ? `http://${slug}.lvh.me:3000/dashboard`
-            : `/${slug}/dashboard`;
+          const isLocal = host.includes('localhost') || host.includes('lvh.me');
+          const protocol = window.location.protocol;
+          const rootDomain = process.env.NEXT_PUBLIC_PLATFORM_DOMAIN || 'asso-in.online';
+
+          const target = isLocal
+            ? `${protocol}//${slug}.lvh.me:3000/dashboard`
+            : `${protocol}//${slug}.${rootDomain}/dashboard`;
           window.location.href = target;
         }, 1500);
       }
@@ -118,10 +123,13 @@ export default function AcceptInvitationPage() {
       setSuccessMsg('Félicitations ! Bienvenue dans votre association.');
       setTimeout(() => {
         const host = window.location.host;
-        const isLvh = host.includes('lvh.me');
-        const target = isLvh
-          ? `http://${slug}.lvh.me:3000/dashboard`
-          : `/${slug}/dashboard`;
+        const isLocal = host.includes('localhost') || host.includes('lvh.me');
+        const protocol = window.location.protocol;
+        const rootDomain = process.env.NEXT_PUBLIC_PLATFORM_DOMAIN || 'asso-in.online';
+
+        const target = isLocal
+          ? `${protocol}//${slug}.lvh.me:3000/dashboard`
+          : `${protocol}//${slug}.${rootDomain}/dashboard`;
         window.location.href = target;
       }, 1500);
     }

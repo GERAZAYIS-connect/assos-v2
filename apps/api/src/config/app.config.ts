@@ -23,7 +23,7 @@ export const appConfig = registerAs('app', () => ({
   jwtPublicKey: process.env.JWT_PUBLIC_KEY,
   jwtAccessExpiry: process.env.JWT_ACCESS_EXPIRY || '15m',
   jwtRefreshExpiry: process.env.JWT_REFRESH_EXPIRY || '30d',
-  platformDomain: process.env.PLATFORM_DOMAIN || 'lvh.me',
+  platformDomain: process.env.PLATFORM_DOMAIN || 'asso-in.online',
   reservedSlugs: (process.env.RESERVED_SLUGS || 'api,admin,app,support,www,static,assets,auth,webhook,help,blog,pricing').split(','),
 }));
 

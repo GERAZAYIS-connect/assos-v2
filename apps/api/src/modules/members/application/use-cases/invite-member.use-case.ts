@@ -56,7 +56,11 @@ export class InviteMemberUseCase {
     });
 
     const slug = invitation.associationSlug || command.associationId;
-    const inviteUrl = `http://${slug}.lvh.me:3000/invite/${token}`;
+    const domain = process.env.PLATFORM_DOMAIN || 'asso-in.online';
+    const isDev = process.env.NODE_ENV === 'development';
+    const protocol = isDev ? 'http' : 'https';
+    const port = isDev ? ':3000' : '';
+    const inviteUrl = `${protocol}://${slug}.${domain}${port}/invite/${token}`;
 
     return {
       invitationId: invitation.id,

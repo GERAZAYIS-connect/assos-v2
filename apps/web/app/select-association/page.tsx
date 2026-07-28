@@ -50,9 +50,14 @@ export default function SelectAssociationPage() {
         ) : (
           <div className={styles.grid}>
             {associations.map((assoc) => {
-              const url = window.location.host.includes('lvh.me')
-                ? `http://${assoc.slug}.lvh.me:3000/dashboard`
-                : `/${assoc.slug}/dashboard`;
+              const host = window.location.host;
+              const isLocal = host.includes('localhost') || host.includes('lvh.me');
+              const protocol = window.location.protocol;
+              const rootDomain = process.env.NEXT_PUBLIC_PLATFORM_DOMAIN || 'asso-in.online';
+
+              const url = isLocal
+                ? `${protocol}//${assoc.slug}.lvh.me:3000/dashboard`
+                : `${protocol}//${assoc.slug}.${rootDomain}/dashboard`;
 
               return (
                 <a key={assoc.id} href={url} className={styles.assocCard}>

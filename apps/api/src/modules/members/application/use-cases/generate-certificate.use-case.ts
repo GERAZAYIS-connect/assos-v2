@@ -44,7 +44,11 @@ export class GenerateCertificateUseCase {
       token,
     );
 
-    const verificationUrl = `http://${command.associationSlug}.lvh.me:3000/verify/certificate/${cert.token}`;
+    const domain = process.env.PLATFORM_DOMAIN || 'asso-in.online';
+    const isDev = process.env.NODE_ENV === 'development';
+    const protocol = isDev ? 'http' : 'https';
+    const port = isDev ? ':3000' : '';
+    const verificationUrl = `${protocol}://${command.associationSlug}.${domain}${port}/verify/certificate/${cert.token}`;
 
     return {
       certificateId: cert.id,
