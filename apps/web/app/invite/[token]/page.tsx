@@ -93,7 +93,8 @@ export default function AcceptInvitationPage() {
         const slug = acceptData.associationSlug || targetSlug || info?.associationSlug || 'solidarite';
         setSuccessMsg('Félicitations ! Votre compte est prêt et vous êtes maintenant membre de l’association.');
         setTimeout(() => {
-        window.location.href = `/${slug}/dashboard`;
+          window.location.href = `/${slug}/dashboard`;
+        }, 1500);
       } else {
         // Fallback for dev mode preview
         const slug = targetSlug || info?.associationSlug || 'solidarite';
