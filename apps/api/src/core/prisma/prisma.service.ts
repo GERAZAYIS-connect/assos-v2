@@ -25,6 +25,11 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       if (url.startsWith('libsql://')) {
         url = url.replace('libsql://', 'https://');
       }
+      // Attach auth token directly to URL if present to ensure 100% auth success
+      if (authToken && !url.includes('authToken=')) {
+        const separator = url.includes('?') ? '&' : '?';
+        url = `${url}${separator}authToken=${authToken}`;
+      }
     } else {
       const dbPath = rawUrl.replace(/^file:/, '');
       const absolutePath = path.isAbsolute(dbPath) ? dbPath : path.join(process.cwd(), dbPath);
