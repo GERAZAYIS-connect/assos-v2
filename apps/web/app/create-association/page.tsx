@@ -161,7 +161,7 @@ export default function CreateAssociationPage() {
                 onChange={handleSlugChange}
                 required
               />
-              <span className={styles.domainSuffix}>.assos.cm</span>
+              <span className={styles.domainSuffix}>.asso-in.online</span>
             </div>
             {slugStatus === 'checking' && (
               <span className={styles.statusChecking}>Vérification de la disponibilité...</span>

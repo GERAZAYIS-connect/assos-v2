@@ -36,7 +36,7 @@ Le système fonctionne selon un modèle multi-locataire fondé sur l'entité **A
 
 ### 3.2 Un lien dédié par association
 
-Chaque association dispose d'un espace accessible via une adresse qui lui est propre, de la forme **nomassociation.assos.cm** (ou tout autre domaine choisi). Cette adresse :
+Chaque association dispose d'un espace accessible via une adresse qui lui est propre, de la forme **nomassociation.asso-in.online** (ou tout autre domaine choisi). Cette adresse :
 
 - donne à l'association une identité visible et mémorisable (elle peut la partager à ses membres, l'afficher sur ses documents officiels) ;
 - reste distincte de l'espace vitrine et du backoffice plateforme, ainsi que de quelques adresses réservées au fonctionnement interne du site (espace d'administration, API, support) qui ne peuvent pas être choisies comme nom d'association ;

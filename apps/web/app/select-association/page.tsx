@@ -61,7 +61,7 @@ export default function SelectAssociationPage() {
                   </div>
                   <div className={styles.assocDetails}>
                     <h3>{assoc.name}</h3>
-                    <span className={styles.slugBadge}>{assoc.slug}.assos.cm</span>
+                    <span className={styles.slugBadge}>{assoc.slug}.asso-in.online</span>
                   </div>
                   <span className="material-symbols-rounded styles.arrow">chevron_right</span>
                 </a>

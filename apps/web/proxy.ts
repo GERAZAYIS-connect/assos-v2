@@ -24,7 +24,7 @@ export function proxy(request: NextRequest) {
   const isLocal = hostname.includes('localhost') || hostname.includes('lvh.me');
   const isVercel = hostname.includes('vercel.app');
 
-  let rootDomain = 'assos.cm';
+  let rootDomain = 'asso-in.online';
   let currentHost = '';
 
   if (isLocal) {
@@ -34,8 +34,8 @@ export function proxy(request: NextRequest) {
     rootDomain = hostname; // On Vercel, root domain is the deployment hostname itself
     currentHost = 'www'; // Skip subdomain rewrites on raw Vercel domains
   } else {
-    // Custom domain production (e.g., assos.cm)
-    rootDomain = process.env.NEXT_PUBLIC_PLATFORM_DOMAIN || 'assos.cm';
+    // Custom domain production (e.g., asso-in.online)
+    rootDomain = process.env.NEXT_PUBLIC_PLATFORM_DOMAIN || 'asso-in.online';
     // Remove the leading dot if configured as .domain.com
     const cleanRoot = rootDomain.startsWith('.') ? rootDomain.substring(1) : rootDomain;
     currentHost = hostname.replace(`.${cleanRoot}`, '').toLowerCase();

@@ -608,7 +608,7 @@ export default function SuperAdminPage() {
                 <tr key={a.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                   <td style={{ padding: '1rem' }}>
                     <strong style={{ display: 'block', fontSize: '0.95rem', color: '#0f172a' }}>{a.name}</strong>
-                    <span style={{ fontSize: '0.78rem', color: '#2563eb', fontWeight: 600 }}>{a.slug}.assos.cm</span>
+                    <span style={{ fontSize: '0.78rem', color: '#2563eb', fontWeight: 600 }}>{a.slug}.asso-in.online</span>
                   </td>
 
                   {/* Completeness Badge */}
