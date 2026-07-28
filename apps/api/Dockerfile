@@ -29,14 +29,17 @@ RUN pnpm --filter @assos/api build
 # Deploy standalone package for production
 RUN pnpm --filter=@assos/api --prod deploy /app/deploy --legacy
 
+# Copy prisma schema and re-generate client inside the deploy folder
+COPY apps/api/prisma /app/deploy/prisma
+RUN cd /app/deploy && npx prisma generate
+
 # Production stage
 FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Copy standalone deployed files
+# Copy standalone deployed files (includes generated prisma client)
 COPY --from=builder /app/deploy ./
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 EXPOSE 4000
 CMD ["node", "dist/main"]
