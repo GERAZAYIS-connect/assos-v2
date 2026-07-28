@@ -41,6 +41,30 @@ export class PrismaAssociationRepository implements IAssociationRepository {
     });
   }
 
+  async findPublic(limit = 20): Promise<{ id: string; name: string; slug: string; logoUrl: string | null; country: string; memberCount: number }[]> {
+    const records = await this.prisma.association.findMany({
+      where: { isActive: true },
+      take: limit,
+      orderBy: { createdAt: 'asc' },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        logoUrl: true,
+        country: true,
+        _count: { select: { members: true } },
+      },
+    });
+    return records.map((r) => ({
+      id: r.id,
+      name: r.name,
+      slug: r.slug,
+      logoUrl: r.logoUrl,
+      country: r.country ?? 'CM',
+      memberCount: r._count.members,
+    }));
+  }
+
   async findById(id: string): Promise<AssociationAggregate | null> {
     const record = await this.prisma.association.findUnique({ where: { id } });
     return record ? this.toDomain(record) : null;

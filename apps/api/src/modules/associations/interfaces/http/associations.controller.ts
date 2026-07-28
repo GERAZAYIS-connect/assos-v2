@@ -21,8 +21,6 @@ import { Inject } from '@nestjs/common';
 
 @ApiTags('associations')
 @Controller({ path: 'associations', version: '1' })
-@UseGuards(AuthGuard('jwt'))
-@ApiBearerAuth()
 export class AssociationsController {
   constructor(
     private readonly createAssocUseCase: CreateAssociationUseCase,
@@ -31,7 +29,17 @@ export class AssociationsController {
     @Inject(ASSOCIATION_REPOSITORY) private readonly assocRepo: IAssociationRepository,
   ) {}
 
+  // ─── Public endpoint: no auth required ───────────────────────────────────
+  @Get('public')
+  @ApiOperation({ summary: 'List active associations for the landing page carousel (no auth)' })
+  async getPublicAssociations() {
+    return this.assocRepo.findPublic(30);
+  }
+
+  // ─── Protected routes ─────────────────────────────────────────────────────
   @Post()
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new association (caller becomes PRESIDENT)' })
   async create(@Body() dto: CreateAssociationDto, @Request() req: { user: TokenPayload }) {
     return this.createAssocUseCase.execute({
@@ -45,6 +53,8 @@ export class AssociationsController {
   }
 
   @Get('mine')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all associations the current user belongs to with role' })
   async getMyAssociations(@Request() req: { user: TokenPayload }) {
     const memberships = await this.assocRepo.findByMemberIdWithRole(req.user.sub);
@@ -56,6 +66,7 @@ export class AssociationsController {
   }
 
   @Get('check-slug/:slug')
+  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Check if a slug is available (real-time)' })
   async checkSlug(@Request() req: { params: { slug: string } }) {
     const exists = await this.assocRepo.slugExists(req.params.slug);
@@ -63,6 +74,8 @@ export class AssociationsController {
   }
 
   @Patch(':id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Update association settings (President only)' })
   async update(
     @Param('id') id: string,
@@ -77,6 +90,8 @@ export class AssociationsController {
   }
 
   @Get(':id/export')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Export all association data (President, Secretary, Treasurer)' })
   async exportData(
     @Param('id') id: string,

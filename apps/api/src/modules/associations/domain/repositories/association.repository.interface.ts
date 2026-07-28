@@ -6,6 +6,7 @@ export interface IAssociationRepository {
   findByMemberId(userId: string): Promise<AssociationAggregate[]>;
   findByMemberIdWithRole(userId: string): Promise<{ association: AssociationAggregate; role: string; memberId: string }[]>;
   slugExists(slug: string): Promise<boolean>;
+  findPublic(limit?: number): Promise<{ id: string; name: string; slug: string; logoUrl: string | null; country: string; memberCount: number }[]>;
   create(data: {
     name: string;
     slug: string;

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function LandingPage() {
@@ -23,14 +23,32 @@ export default function LandingPage() {
     },
   };
 
-  const activeAssociations = [
-    { name: 'Anciens du Collège Libermann', city: 'Douala, Cameroun', members: 142, icon: 'school', tag: 'Amicale' },
-    { name: 'Tontine Solidarité & Entraide', city: 'Yaoundé, Cameroun', members: 85, icon: 'diversity_3', tag: 'Tontine Enchères' },
-    { name: 'Mutuelle des Femmes de Bafoussam', city: 'Bafoussam, Cameroun', members: 210, icon: 'volunteer_activism', tag: 'Secours & Santé' },
-    { name: 'Njangi Diaspora Club', city: 'Paris, France', members: 64, icon: 'public', tag: 'Investissement' },
-    { name: 'Association Résidents Bonapriso', city: 'Douala, Cameroun', members: 95, icon: 'home_work', tag: 'Quartier' },
-    { name: 'Fraternité Abidjan Mutuelle', city: 'Abidjan, Côte d’Ivoire', members: 118, icon: 'handshake', tag: 'Mutuelle' },
-  ];
+  interface PublicAssoc {
+    id: string;
+    name: string;
+    slug: string;
+    logoUrl: string | null;
+    country: string;
+    memberCount: number;
+  }
+  const [activeAssociations, setActiveAssociations] = useState<PublicAssoc[]>([]);
+
+  // Country flag emoji helper
+  const countryFlag = (code: string) => {
+    const base = 0x1F1E6 - 0x41;
+    return String.fromCodePoint(...code.toUpperCase().split('').map(c => base + c.charCodeAt(0)));
+  };
+
+  useEffect(() => {
+    fetch('/api/backend/associations/public')
+      .then(r => r.ok ? r.json() : [])
+      .then((data: PublicAssoc[]) => {
+        if (data && data.length > 0) {
+          setActiveAssociations(data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div style={{ background: '#f8fafc', color: '#0f172a', fontFamily: 'system-ui, -apple-system, sans-serif', minHeight: '100vh', scrollBehavior: 'smooth' }}>
@@ -379,6 +397,7 @@ export default function LandingPage() {
         </div>
 
         {/* Endless Marquee Track */}
+        {activeAssociations.length > 0 && (
         <div style={{ display: 'flex', width: 'max-content' }} className="animate-carousel">
           {[...activeAssociations, ...activeAssociations].map((assoc, index) => (
             <div
@@ -396,31 +415,43 @@ export default function LandingPage() {
                 backdropFilter: 'blur(8px)',
               }}
             >
+              {/* Logo or Initials Avatar */}
               <div style={{
                 width: 44,
                 height: 44,
                 borderRadius: '12px',
-                background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                background: assoc.logoUrl
+                  ? 'transparent'
+                  : 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: '#ffffff',
                 flexShrink: 0,
+                overflow: 'hidden',
               }}>
-                <span className="material-symbols-rounded" style={{ fontSize: '1.4rem' }}>{assoc.icon}</span>
+                {assoc.logoUrl ? (
+                  <img src={assoc.logoUrl} alt={assoc.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <span style={{ fontSize: '1.1rem', fontWeight: 800 }}>
+                    {assoc.name.charAt(0).toUpperCase()}
+                  </span>
+                )}
               </div>
               <div style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#f8fafc' }}>
                   {assoc.name}
                 </div>
                 <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span>📍 {assoc.city}</span>
-                  <span>• {assoc.members} membres</span>
+                  <span>{countryFlag(assoc.country)} {assoc.country}</span>
+                  <span>• {assoc.memberCount} membre{assoc.memberCount > 1 ? 's' : ''}</span>
                 </div>
               </div>
             </div>
           ))}
         </div>
+        )}
+
       </section>
 
       {/* 3. Simplify Tasks Boost Productivity Section */}
