@@ -345,7 +345,7 @@ export default function LandingPage() {
 
               <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid #e2e8f0' }}>
                 <img
-                  src="/banner/vl-banner-thumb1.1.png"
+                  src="/banner/home-dashboard.png"
                   alt="Tableau de bord principal Assos 2.0"
                   style={{ width: '100%', height: 'auto', display: 'block' }}
                 />
