@@ -612,7 +612,7 @@ export default function LandingPage() {
                 background: '#ffffff'
               }}>
                 <img
-                  src="/banner/vl-banner-thumb1.1.png"
+                  src="/banner/home-dashboard.png"
                   alt="Tableau de bord de supervision financière Assos 2.0"
                   style={{ width: '100%', height: 'auto', display: 'block' }}
                 />

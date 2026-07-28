@@ -31,7 +31,7 @@ export default function LoginPage() {
         try {
           const assocRes = await fetch('/api/backend/associations/mine');
           if (assocRes.ok) {
-            const list = await assocRes.json();
+            if (Array.isArray(list) && list.length === 1) {
               window.location.href = `/${list[0].slug}/dashboard`;
               return;
             } else if (Array.isArray(list) && list.length > 1) {
