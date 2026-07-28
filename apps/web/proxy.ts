@@ -15,6 +15,9 @@ export function proxy(request: NextRequest) {
     url.pathname.startsWith('/create-association') ||
     url.pathname.startsWith('/certificates') ||
     url.pathname.startsWith('/verify') ||
+    url.pathname.startsWith('/privacy') ||
+    url.pathname.startsWith('/terms') ||
+    url.pathname.startsWith('/about') ||
     url.pathname.includes('.')
   ) {
     return NextResponse.next();
@@ -58,8 +61,8 @@ export function proxy(request: NextRequest) {
   const hasToken = request.cookies.has('next-auth.session-token') || request.cookies.has('__Secure-next-auth.session-token');
   if (!hasToken) {
     const protocol = request.headers.get('x-forwarded-proto') || 'http';
-    const loginUrl = new URL('/login', `${protocol}://${rootDomain}`);
-    // Optionally append callback URL
+    // Use the current hostname to avoid cross-origin (www vs root) redirect CORS issues
+    const loginUrl = new URL('/login', `${protocol}://${hostname}`);
     loginUrl.searchParams.set('callbackUrl', request.url);
     return NextResponse.redirect(loginUrl);
   }
