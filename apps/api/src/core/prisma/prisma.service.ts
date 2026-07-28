@@ -26,8 +26,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       url = `file:${absolutePath.replace(/\\/g, '/')}`;
     }
 
-    this.logger.log(`Initializing Prisma Client with URL: ${isRemote ? 'Remote LibSQL Database' : url}`);
-
     const libsql = createClient({ url, authToken });
     const adapter = new PrismaLibSql({ url, client: libsql } as any);
 
@@ -38,6 +36,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         { emit: 'stdout', level: 'warn' },
       ],
     });
+
+    this.logger.log(`Initializing Prisma Client with URL: ${isRemote ? 'Remote LibSQL Database' : url}`);
   }
 
   async onModuleInit() {
