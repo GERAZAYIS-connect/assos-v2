@@ -55,7 +55,14 @@ export default function ContactPage() {
       </header>
 
       {/* 2. Hero Section */}
-      <section style={{ background: '#000000', padding: '6rem 1.25rem', textAlign: 'center', color: '#ffffff' }}>
+      <section style={{ 
+        backgroundImage: 'linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.8)), url(/cta/vl-cta-thumb-1.1.png)', 
+        backgroundSize: 'cover', 
+        backgroundPosition: 'center', 
+        padding: '8rem 1.25rem', 
+        textAlign: 'center', 
+        color: '#ffffff' 
+      }}>
         <h1 style={{ fontSize: '3.5rem', fontWeight: 900, margin: '0 0 1rem 0', letterSpacing: '-0.03em' }}>Nous Contacter</h1>
         <div style={{ fontSize: '1rem', color: '#a1a1aa' }}>
           <Link href="/" style={{ color: '#ffffff', textDecoration: 'none' }}>Accueil</Link>
