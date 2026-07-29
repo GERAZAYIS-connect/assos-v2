@@ -39,11 +39,6 @@ export default function MembersPage() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const ITEMS_PER_PAGE = 10;
 
-  // View and Pagination states
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const ITEMS_PER_PAGE = 10;
-
   // Modal states
   const [showInviteModal, setShowInviteModal] = useState<boolean>(false);
   const [inviteMode, setInviteMode] = useState<'link' | 'manual'>('link');
@@ -114,13 +109,67 @@ export default function MembersPage() {
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
-      } else {
-        setInviteError(data.message || 'Échec de la création du lien d’invitation.');
+    if (inviteMode === 'link') {
+      setInviteError('');
+      setInviteLoading(true);
+
+      try {
+        const res = await fetch(`/api/backend/associations/${tenantSlug}/members/invite`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: inviteEmail, role: inviteRole }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setCreatedInviteUrl(data.invitationUrl);
+        } else {
+          const err = await res.json().catch(() => ({}));
+          setInviteError(err.message || "Erreur lors de la création de l'invitation.");
+        }
+      } catch (err) {
+        setInviteError("Impossible de joindre le serveur.");
+      } finally {
+        setInviteLoading(false);
       }
-    } catch (err: any) {
-      setInviteError(err.message || 'Erreur réseau.');
-    } finally {
-      setInviteLoading(false);
+    } else {
+      // Manual Add
+      if (!manualFirstName || !manualLastName || (!inviteEmail && !manualPhone)) {
+        setInviteError('Le nom, prénom et (email ou téléphone) sont requis.');
+        return;
+      }
+      setInviteError('');
+      setInviteLoading(true);
+
+      try {
+        const res = await fetch(`/api/backend/associations/${tenantSlug}/members/manual`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            firstName: manualFirstName,
+            lastName: manualLastName,
+            email: inviteEmail,
+            phone: manualPhone,
+            role: inviteRole
+          }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setManualResult({
+            emailOrPhone: inviteEmail || manualPhone,
+            password: data.defaultPassword
+          });
+          fetchMembers(tenantSlug); // Refresh list
+        } else {
+          const err = await res.json().catch(() => ({}));
+          setInviteError(err.message || "Erreur lors de l'ajout manuel.");
+        }
+      } catch (err) {
+        setInviteError("Impossible de joindre le serveur.");
+      } finally {
+        setInviteLoading(false);
+      }
     }
   };
 
