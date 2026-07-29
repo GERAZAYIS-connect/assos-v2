@@ -861,11 +861,15 @@ export default function LandingPage() {
             Assos 2.0 se connecte directement aux principaux réseaux de télécommunications du continent pour automatiser vos flux financiers.
           </p>
 
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '1.25rem', flexWrap: 'wrap', marginBottom: '4rem' }}>
             <span style={{ background: 'rgba(255,255,255,0.08)', padding: '0.85rem 1.75rem', borderRadius: 999, fontWeight: 700, color: '#ffcc00' }}>MTN MoMo</span>
             <span style={{ background: 'rgba(255,255,255,0.08)', padding: '0.85rem 1.75rem', borderRadius: 999, fontWeight: 700, color: '#ff6600' }}>Orange Money</span>
             <span style={{ background: 'rgba(255,255,255,0.08)', padding: '0.85rem 1.75rem', borderRadius: 999, fontWeight: 700, color: '#38bdf8' }}>Termii SMS</span>
             <span style={{ background: 'rgba(255,255,255,0.08)', padding: '0.85rem 1.75rem', borderRadius: 999, fontWeight: 700, color: '#34d399' }}>MeSomb API</span>
+          </div>
+
+          <div style={{ width: '100%', maxWidth: 700, margin: '0 auto', position: 'relative' }}>
+            <img src="/galerie/integrations_simple.png" alt="Réseau d'intégrations" style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 24 }} />
           </div>
         </div>
       </section>
