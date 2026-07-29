@@ -656,55 +656,101 @@ export default function LandingPage() {
       </section>
 
       {/* 4. Innovative Technology Section */}
-      <section id="technologie" style={{ padding: '5rem 1.25rem', background: '#fafbfc' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+      <section id="technologie" style={{ padding: '6rem 1.25rem', background: '#fafbfc' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           
-          <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-            <div style={{ background: '#f1f5f9', color: '#000', fontSize: '0.75rem', fontWeight: 800, padding: '0.35rem 0.85rem', borderRadius: 999, display: 'inline-block', marginBottom: '1rem' }}>
-              TECHNOLOGIE ET RÉSULTATS
+          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+            <div style={{ background: '#e0e7ff', color: '#4f46e5', fontSize: '0.8rem', fontWeight: 800, padding: '0.4rem 1rem', borderRadius: 999, display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
+              <span className="material-symbols-rounded" style={{ fontSize: '1rem' }}>auto_awesome_mosaic</span>
+              Smart Tools For Busy Teams
             </div>
-            <h2 style={{ fontSize: '2.25rem', fontWeight: 900, color: '#0f172a', margin: 0 }}>
-              Une technologie innovante qui propulse votre association
+            <h2 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#312e81', margin: 0, letterSpacing: '-0.02em', maxWidth: 600, marginInline: 'auto', lineHeight: 1.2 }}>
+              Une technologie innovante qui propulse vos résultats
             </h2>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
+          <div className="tech-grid" style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(12, 1fr)', 
+            gap: '1.5rem'
+          }}>
             
-            {/* Box 1 */}
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 20, padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div style={{ height: 150, background: '#f8fafc', borderRadius: 14, overflow: 'hidden', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/galerie/gallery-1.png" alt="Créer un compte association" style={{ width: '80%', height: 'auto', objectFit: 'contain' }} />
+            {/* Top Left: Pie Chart */}
+            <div style={{ gridColumn: 'span 4', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 24, padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
+              <div style={{ height: 220, background: '#f8fafc', borderRadius: 16, overflow: 'hidden', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img src="/galerie/tech_pie_chart_1785315302706.png" alt="Automatisation" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
-              <div>
-                <strong style={{ fontSize: '1.1rem', color: '#0f172a', display: 'block', marginBottom: '0.5rem' }}>Création de compte rapide</strong>
-                <span style={{ fontSize: '0.85rem', color: '#475569' }}>Créez l'identité numérique de votre association en 2 minutes avec son espace dédié.</span>
-              </div>
-            </div>
-
-            {/* Box 2 */}
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 20, padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div style={{ height: 150, background: '#f8fafc', borderRadius: 14, overflow: 'hidden', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/galerie/gallery-2.png" alt="Liaison tontines" style={{ width: '80%', height: 'auto', objectFit: 'contain' }} />
-              </div>
-              <div>
-                <strong style={{ fontSize: '1.1rem', color: '#0f172a', display: 'block', marginBottom: '0.5rem' }}>Configuration de tontines</strong>
-                <span style={{ fontSize: '0.85rem', color: '#475569' }}>Renseignez vos tontines de secours, njangi, à ordre fixe ou à enchères adaptables.</span>
+              <div style={{ textAlign: 'center' }}>
+                <strong style={{ fontSize: '1.1rem', color: '#0f172a', display: 'block', marginBottom: '0.5rem' }}>Automatisation des Tâches</strong>
+                <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Automatisez vos tâches répétitives et optimisez vos flux de travail pour gagner du temps.</span>
               </div>
             </div>
 
-            {/* Box 3 */}
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 20, padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div style={{ height: 150, background: '#f8fafc', borderRadius: 14, overflow: 'hidden', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/galerie/gallery-3.png" alt="Reçus de paiement" style={{ width: '80%', height: 'auto', objectFit: 'contain' }} />
+            {/* Top Middle: Certificate Nodes */}
+            <div style={{ gridColumn: 'span 4', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 24, padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
+              <div style={{ height: 220, background: '#f8fafc', borderRadius: 16, overflow: 'hidden', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img src="/galerie/tech_certificate_nodes_1785315312267.png" alt="Certification" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
-              <div>
-                <strong style={{ fontSize: '1.1rem', color: '#0f172a', display: 'block', marginBottom: '0.5rem' }}>Suivi & relances automatiques</strong>
-                <span style={{ fontSize: '0.85rem', color: '#475569' }}>Recevez des alertes SMS automatiques pour le paiement de vos parts ou le remboursement des prêts.</span>
+              <div style={{ textAlign: 'center' }}>
+                <strong style={{ fontSize: '1.1rem', color: '#0f172a', display: 'block', marginBottom: '0.5rem' }}>Génération de Certificats</strong>
+                <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Générez des attestations d'adhésion sécurisées et connectez vos membres en temps réel.</span>
+              </div>
+            </div>
+
+            {/* Right Card (spans 2 rows): Mobile app */}
+            <div style={{ gridColumn: 'span 4', gridRow: 'span 2', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 24, padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
+              <div style={{ flex: 1, minHeight: 300, background: '#f8fafc', borderRadius: 16, overflow: 'hidden', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img src="/galerie/tech_mobile_app_1785315330468.png" alt="Fonctionnalités intelligentes" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+              <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
+                <strong style={{ fontSize: '1.15rem', color: '#0f172a', display: 'block', marginBottom: '0.75rem' }}>Fonctionnalités Intelligentes</strong>
+                <span style={{ fontSize: '0.9rem', color: '#64748b', display: 'block', marginBottom: '1.25rem', lineHeight: 1.5 }}>
+                  Simplifiez la manière dont votre équipe travaille avec des outils intelligents conçus pour éliminer la complexité.
+                </span>
+                <Link href="/register" style={{ background: '#a3e635', color: '#0f172a', textDecoration: 'none', padding: '0.85rem 1.5rem', borderRadius: 999, fontWeight: 800, fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 10px rgba(163,230,53,0.3)' }}>
+                  Commencer Maintenant
+                  <span className="material-symbols-rounded" style={{ fontSize: '1.1rem' }}>arrow_forward</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Bottom Left (spans 2 cols): Bar Chart */}
+            <div className="bottom-card" style={{ gridColumn: 'span 8', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 24, padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '2rem', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
+              <div style={{ flex: '1', height: 260, background: '#f8fafc', borderRadius: 16, overflow: 'hidden', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img src="/galerie/tech_bar_chart_1785315321768.png" alt="Collaboration Simplifiée" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+              <div className="bottom-card-text" style={{ flex: '1', paddingRight: '1rem' }}>
+                <strong style={{ fontSize: '1.2rem', color: '#0f172a', display: 'block', marginBottom: '0.75rem' }}>Collaboration Simplifiée</strong>
+                <span style={{ fontSize: '0.9rem', color: '#64748b', display: 'block', marginBottom: '1.25rem', lineHeight: 1.5 }}>
+                  Rassemblez votre équipe au même endroit. Partagez des mises à jour, assignez des tâches et échangez des retours instantanément sans effort.
+                </span>
+                <Link href="#solutions" style={{ background: '#a3e635', color: '#0f172a', textDecoration: 'none', padding: '0.75rem 1.5rem', borderRadius: 999, fontWeight: 800, fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 10px rgba(163,230,53,0.3)' }}>
+                  Explorer les outils
+                  <span className="material-symbols-rounded" style={{ fontSize: '1.1rem' }}>arrow_forward</span>
+                </Link>
               </div>
             </div>
 
           </div>
         </div>
+        <style jsx>{`
+          @media (max-width: 992px) {
+            .tech-grid {
+              display: flex !important;
+              flex-direction: column;
+            }
+            .tech-grid > div {
+              width: 100% !important;
+            }
+            .bottom-card {
+              flex-direction: column !important;
+              text-align: center;
+            }
+            .bottom-card-text {
+              padding-right: 0 !important;
+            }
+          }
+        `}</style>
       </section>
 
       {/* 5. How It Works Section */}
