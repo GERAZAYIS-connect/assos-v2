@@ -19,6 +19,7 @@ interface Association {
   savingsInterestRate: number;
   joiningFee: number;
   role?: string;
+  logoUrl?: string | null;
 }
 
 export default function SettingsPage() {
@@ -41,6 +42,10 @@ export default function SettingsPage() {
   const [savingsInterestRate, setSavingsInterestRate] = useState<number>(0);
   const [joiningFee, setJoiningFee] = useState<number>(0);
   const [plan, setPlan] = useState<'DISCOVERY' | 'ESSENTIAL' | 'PRO' | 'ENTERPRISE'>('DISCOVERY');
+  const [logoUrl, setLogoUrl] = useState('');
+
+  // Tabs
+  const [activeTab, setActiveTab] = useState<'GENERAL' | 'FINANCE' | 'SUBSCRIPTION'>('GENERAL');
 
   // Billing Cycle Toggle (Monthly vs Annual)
   const [isAnnual, setIsAnnual] = useState(false);
@@ -73,6 +78,7 @@ export default function SettingsPage() {
           setSavingsInterestRate(current.savingsInterestRate || 0);
           setJoiningFee(current.joiningFee || 0);
           setPlan(current.plan || 'DISCOVERY');
+          setLogoUrl(current.logoUrl || '');
         } else {
           setError("Association introuvable ou accès non autorisé.");
         }
@@ -111,6 +117,7 @@ export default function SettingsPage() {
           savingsInterestRate,
           joiningFee,
           plan,
+          logoUrl,
         }),
       });
 
@@ -249,17 +256,54 @@ export default function SettingsPage() {
         </div>
       )}
 
+      {/* Tabs Menu */}
+      <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid #e2e8f0', marginBottom: '2rem', overflowX: 'auto' }}>
+        <button type="button" onClick={() => setActiveTab('GENERAL')} style={{ background: 'none', border: 'none', borderBottom: activeTab === 'GENERAL' ? '2px solid #2563eb' : '2px solid transparent', padding: '0.75rem 1rem', fontWeight: 600, color: activeTab === 'GENERAL' ? '#2563eb' : '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}>
+          <span className="material-symbols-rounded">domain</span> Identité & Paramètres
+        </button>
+        <button type="button" onClick={() => setActiveTab('FINANCE')} style={{ background: 'none', border: 'none', borderBottom: activeTab === 'FINANCE' ? '2px solid #10b981' : '2px solid transparent', padding: '0.75rem 1rem', fontWeight: 600, color: activeTab === 'FINANCE' ? '#10b981' : '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}>
+          <span className="material-symbols-rounded">payments</span> Règles Financières
+        </button>
+        <button type="button" onClick={() => setActiveTab('SUBSCRIPTION')} style={{ background: 'none', border: 'none', borderBottom: activeTab === 'SUBSCRIPTION' ? '2px solid #7c3aed' : '2px solid transparent', padding: '0.75rem 1rem', fontWeight: 600, color: activeTab === 'SUBSCRIPTION' ? '#7c3aed' : '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}>
+          <span className="material-symbols-rounded">stars</span> Abonnement SaaS
+        </button>
+      </div>
+
       {/* Grid: Settings & Billing */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: '2rem', alignItems: 'start' }}>
+      <div style={{ display: 'block' }}>
         
-        {/* Left Side: Association Details & Rules Form */}
-        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        {/* Form Container */}
+        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '800px' }}>
           
+          {activeTab === 'GENERAL' && (
           <div className={styles.card} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: '1.75rem' }}>
             <h2 style={{ fontSize: '1.2rem', fontWeight: 800, margin: '0 0 1.25rem 0', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0f172a' }}>
               <span className="material-symbols-rounded" style={{ color: '#2563eb' }}>domain</span>
               Identité Officielle & Juridique
             </h2>
+
+            {/* Avatar / Logo Section */}
+            <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', marginBottom: '1.5rem', padding: '1rem', background: '#f8fafc', borderRadius: 12, border: '1px dashed #cbd5e1' }}>
+              <div style={{ width: 64, height: 64, borderRadius: 16, background: logoUrl ? '#fff' : 'linear-gradient(135deg, #6366f1, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.5rem', fontWeight: 800, overflow: 'hidden', flexShrink: 0, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+                {logoUrl ? (
+                  <img src={logoUrl} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <span>{name ? name.charAt(0).toUpperCase() : 'A'}</span>
+                )}
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontWeight: 600, fontSize: '0.88rem', color: '#334155', display: 'block', marginBottom: '0.35rem' }}>Lien vers le logo (URL de l'image)</label>
+                <input
+                  type="url"
+                  className={styles.input}
+                  value={logoUrl}
+                  disabled={!isPresident}
+                  onChange={(e) => setLogoUrl(e.target.value)}
+                  placeholder="Ex: https://monsite.com/logo.png"
+                  style={{ width: '100%' }}
+                />
+              </div>
+            </div>
 
             <div className={styles.formGroup} style={{ marginBottom: '1.1rem' }}>
               <label style={{ fontWeight: 600, fontSize: '0.88rem', color: '#334155' }}>Nom de l'Association</label>
@@ -346,9 +390,20 @@ export default function SettingsPage() {
                 </select>
               </div>
             </div>
+
+            {isPresident && (
+              <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #f1f5f9' }}>
+                <button type="submit" className={styles.submitBtn} disabled={saving} style={{ background: '#0f172a', color: '#fff', borderRadius: 10, padding: '0.8rem 1.25rem', fontWeight: 600, width: '100%', cursor: 'pointer', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
+                  <span className="material-symbols-rounded">save</span>
+                  {saving ? 'Enregistrement...' : 'Enregistrer les informations générales'}
+                </button>
+              </div>
+            )}
           </div>
+          )}
 
           {/* Rules & Tariffs */}
+          {activeTab === 'FINANCE' && (
           <div className={styles.card} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: '1.75rem' }}>
             <h2 style={{ fontSize: '1.2rem', fontWeight: 800, margin: '0 0 1.25rem 0', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0f172a' }}>
               <span className="material-symbols-rounded" style={{ color: '#10b981' }}>payments</span>
@@ -384,15 +439,19 @@ export default function SettingsPage() {
             </div>
 
             {isPresident && (
-              <button type="submit" className={styles.submitBtn} disabled={saving} style={{ background: '#0f172a', color: '#fff', borderRadius: 10, padding: '0.8rem 1.25rem', fontWeight: 600, width: '100%', cursor: 'pointer' }}>
-                <span className="material-symbols-rounded">save</span>
-                {saving ? 'Enregistrement...' : 'Enregistrer les modifications'}
-              </button>
+              <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #f1f5f9' }}>
+                <button type="submit" className={styles.submitBtn} disabled={saving} style={{ background: '#0f172a', color: '#fff', borderRadius: 10, padding: '0.8rem 1.25rem', fontWeight: 600, width: '100%', cursor: 'pointer', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
+                  <span className="material-symbols-rounded">save</span>
+                  {saving ? 'Enregistrement...' : 'Enregistrer les règles financières'}
+                </button>
+              </div>
             )}
           </div>
+          )}
 
           {/* Links & Portability */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          {activeTab !== 'SUBSCRIPTION' && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
             <button type="button" onClick={handleExport} style={{ background: '#1e293b', color: '#fff', border: 'none', padding: '0.85rem', borderRadius: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
               <span className="material-symbols-rounded">download</span>
               Export JSON
@@ -403,11 +462,13 @@ export default function SettingsPage() {
               Vie Privée
             </Link>
           </div>
+          )}
 
         </form>
 
         {/* Right Side: Subscription Pricing Table */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        {activeTab === 'SUBSCRIPTION' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '800px' }}>
           
           <div className={styles.card} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: '1.75rem' }}>
             
@@ -542,10 +603,9 @@ export default function SettingsPage() {
                 );
               })}
             </div>
-
           </div>
-
         </div>
+        )}
 
       </div>
 

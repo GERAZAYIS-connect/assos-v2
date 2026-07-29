@@ -91,7 +91,7 @@ export default function TenantDashboardPage() {
       }
 
       // 6. Fetch Real Transactions for Activity Stream
-      const txRes = await fetch(`/api/backend/associations/${tenantSlug}/transactions`);
+      const txRes = await fetch(`/api/backend/associations/${tenantSlug}/treasury/transactions`);
       let txList: any[] = [];
       if (txRes.ok) {
         const txData = await txRes.json();
