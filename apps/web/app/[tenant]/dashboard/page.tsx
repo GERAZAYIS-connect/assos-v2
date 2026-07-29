@@ -153,28 +153,28 @@ export default function TenantDashboardPage() {
       label: 'Membres actifs',
       value: `${metrics.membersCount} membres`,
       sub: 'Gestion des adhésions',
-      color: '#2563eb',
+      color: '#000000',
     },
     {
       icon: 'account_balance',
       label: 'Trésorerie globale',
       value: `${metrics.totalTreasuryBalance.toLocaleString('fr-FR')} FCFA`,
       sub: 'Solde total multi-caisses',
-      color: '#15803d',
+      color: '#000000',
     },
     {
       icon: 'currency_exchange',
       label: 'Tontines actives',
       value: `${metrics.tontinesCount} tontines`,
       sub: 'Séances & Enchères',
-      color: '#d97706',
+      color: '#000000',
     },
     {
       icon: 'handshake',
       label: 'Prêts en cours',
       value: `${metrics.loansCount} crédits`,
       sub: `${metrics.totalLoansAmount.toLocaleString('fr-FR')} FCFA restant`,
-      color: '#dc2626',
+      color: '#000000',
     },
   ];
 
@@ -213,7 +213,7 @@ export default function TenantDashboardPage() {
             <div className={styles.welcomeBanner}>
               <div>
                 <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span className="material-symbols-rounded" style={{ fontSize: '1.8rem', color: '#fbbf24' }}>star</span>
+                  <span className="material-symbols-rounded" style={{ fontSize: '1.8rem', color: '#000000' }}>star</span>
                   Espace Exécutif — {tenantSlug.toUpperCase()}
                 </h2>
                 <p>
@@ -241,7 +241,7 @@ export default function TenantDashboardPage() {
             {/* Performance Metrics Cards */}
             <div className={styles.kpiGrid} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
               <div className={styles.kpiCard}>
-                <div className={styles.kpiIcon} style={{ color: '#2563eb', background: '#eff6ff' }}>
+                <div className={styles.kpiIcon} style={{ color: '#000000', background: '#f8fafc' }}>
                   <span className="material-symbols-rounded">pie_chart</span>
                 </div>
                 <div className={styles.kpiContent}>
@@ -252,18 +252,18 @@ export default function TenantDashboardPage() {
               </div>
 
               <div className={styles.kpiCard}>
-                <div className={styles.kpiIcon} style={{ color: '#dc2626', background: '#fef2f2' }}>
+                <div className={styles.kpiIcon} style={{ color: metrics.unreadNotifications > 0 ? '#dc2626' : '#000000', background: metrics.unreadNotifications > 0 ? '#fef2f2' : '#f8fafc' }}>
                   <span className="material-symbols-rounded">mark_email_unread</span>
                 </div>
                 <div className={styles.kpiContent}>
                   <span className={styles.kpiLabel}>Relances & Alertes</span>
-                  <span className={styles.kpiValue}>{metrics.unreadNotifications} non-lues</span>
+                  <span className={styles.kpiValue} style={{ color: metrics.unreadNotifications > 0 ? '#dc2626' : 'inherit' }}>{metrics.unreadNotifications} non-lues</span>
                   <span style={{ fontSize: '0.78rem', color: '#64748b' }}>SMS, Email & WhatsApp</span>
                 </div>
               </div>
 
               <div className={styles.kpiCard}>
-                <div className={styles.kpiIcon} style={{ color: '#7c3aed', background: '#f5f3ff' }}>
+                <div className={styles.kpiIcon} style={{ color: '#000000', background: '#f8fafc' }}>
                   <span className="material-symbols-rounded">event</span>
                 </div>
                 <div className={styles.kpiContent}>
@@ -279,7 +279,7 @@ export default function TenantDashboardPage() {
             {/* Main Center Section: Recent Activity & Live Treasury Stream */}
             <div className={styles.section} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: '1.5rem' }}>
               <h2 className={styles.sectionTitle} style={{ fontSize: '1.2rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span className="material-symbols-rounded" style={{ color: '#2563eb' }}>history</span>
+                <span className="material-symbols-rounded" style={{ color: '#000000' }}>history</span>
                 Journal d'Activité Récente & Opérations de Trésorerie (Données Réelles)
               </h2>
 
@@ -296,9 +296,9 @@ export default function TenantDashboardPage() {
                     <div
                       key={act.id}
                       style={{
-                        background: act.type === 'TRANSACTION' ? (act.isDeposit ? '#f0fdf4' : '#fef2f2') : '#f8fafc',
+                        background: act.type === 'TRANSACTION' ? (act.isDeposit ? '#f0fdf4' : '#fef2f2') : '#ffffff',
                         border: '1px solid #e2e8f0',
-                        borderLeft: `4px solid ${act.type === 'TRANSACTION' ? (act.isDeposit ? '#166534' : '#dc2626') : '#2563eb'}`,
+                        borderLeft: `4px solid ${act.type === 'TRANSACTION' ? (act.isDeposit ? '#10b981' : '#dc2626') : '#000000'}`,
                         borderRadius: 10,
                         padding: '0.85rem 1.25rem',
                         display: 'flex',
@@ -314,7 +314,7 @@ export default function TenantDashboardPage() {
                             background: '#ffffff',
                             padding: '0.5rem',
                             borderRadius: 8,
-                            color: act.type === 'TRANSACTION' ? (act.isDeposit ? '#166534' : '#dc2626') : '#2563eb',
+                            color: act.type === 'TRANSACTION' ? (act.isDeposit ? '#10b981' : '#dc2626') : '#000000',
                             border: '1px solid #e2e8f0',
                           }}
                         >
