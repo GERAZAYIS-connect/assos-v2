@@ -178,13 +178,14 @@ export class PrismaMemberRepository implements IMemberRepository {
     userId: string,
     role: AssociationRole,
   ): Promise<MemberEntity> {
-    const assoc = await this.prisma.association.findUnique({ where: { id: associationId } });
+    const assocId = (await this.resolveAssociationId(associationId)) || associationId;
+    const assoc = await this.prisma.association.findUnique({ where: { id: assocId } });
     const now = new Date();
     const memberNumber = MemberNumber.generate(assoc?.name || assoc?.slug || 'ASS', now);
 
     const raw = await this.prisma.associationMember.create({
       data: {
-        associationId,
+        associationId: assocId,
         userId,
         role,
         memberNumber,

@@ -122,7 +122,7 @@ export default function MembersPage() {
 
         if (res.ok) {
           const data = await res.json();
-          setCreatedInviteUrl(data.invitationUrl);
+          setCreatedInviteUrl(data.inviteUrl);
         } else {
           const err = await res.json().catch(() => ({}));
           setInviteError(err.message || "Erreur lors de la création de l'invitation.");
