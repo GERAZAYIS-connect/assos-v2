@@ -271,7 +271,7 @@ export default function TenantDashboardPage() {
             </div>
 
             {/* Main Center Section: Recent Activity & Live Treasury Stream */}
-            <div className={styles.section} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: '1.5rem', overflowX: 'auto' }}>
+            <div className={styles.section} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: '1.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
                 <h2 className={styles.sectionTitle} style={{ fontSize: '1.2rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <span className="material-symbols-rounded" style={{ color: '#000000' }}>history</span>
@@ -292,8 +292,9 @@ export default function TenantDashboardPage() {
                   <p style={{ fontSize: '0.9rem' }}>Aucune transaction récente enregistrée.</p>
                 </div>
               ) : (
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', textAlign: 'left' }}>
-                  <thead>
+                <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', textAlign: 'left', minWidth: '600px' }}>
+                    <thead>
                     <tr style={{ borderBottom: '2px solid #e2e8f0', color: '#64748b', fontSize: '0.8rem', textTransform: 'uppercase' }}>
                       <th style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>Date</th>
                       <th style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>Type</th>
@@ -349,6 +350,7 @@ export default function TenantDashboardPage() {
                     )}
                   </tbody>
                 </table>
+              </div>
               )}
             </div>
           </div>

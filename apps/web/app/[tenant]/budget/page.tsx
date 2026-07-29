@@ -313,8 +313,9 @@ export default function BudgetDashboardPage() {
             <p>Cliquez sur "Créer / Modifier le Budget {currentYear}" pour définir les recettes et dépenses estimées.</p>
           </div>
         ) : (
-          <table className={styles.table}>
-            <thead>
+          <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <table className={styles.table}>
+              <thead>
               <tr>
                 <th>Type</th>
                 <th>Poste / Catégorie</th>
@@ -352,6 +353,7 @@ export default function BudgetDashboardPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 
@@ -404,8 +406,9 @@ export default function BudgetDashboardPage() {
             </div>
 
             <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '0.75rem' }}>Bordereau Individuel de Cassation par Membre</h3>
-            <table className={styles.table}>
-              <thead>
+            <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <table className={styles.table}>
+                <thead>
                 <tr>
                   <th>Membre</th>
                   <th>Épargne Accumulée</th>
@@ -438,6 +441,7 @@ export default function BudgetDashboardPage() {
                 })}
               </tbody>
             </table>
+            </div>
           </div>
         )}
       </div>
@@ -453,9 +457,10 @@ export default function BudgetDashboardPage() {
         {historyDistributions.length === 0 ? (
           <p style={{ color: '#666', fontStyle: 'italic' }}>Aucun historique d'exercice clôturé pour le moment.</p>
         ) : (
-          <table className={styles.table}>
-            <thead>
-              <tr>
+          <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
                 <th>Exercice</th>
                 <th>Bénéfice Net</th>
                 <th>Montant Distribuable</th>
@@ -483,6 +488,7 @@ export default function BudgetDashboardPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

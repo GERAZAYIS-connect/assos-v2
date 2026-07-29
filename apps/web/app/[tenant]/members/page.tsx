@@ -171,13 +171,14 @@ export default function MembersPage() {
           />
         </div>
 
-        <div className={styles.statusTabs}>
+        <div className={styles.statusTabs} style={{ display: 'flex', overflowX: 'auto', whiteSpace: 'nowrap', gap: '0.5rem', scrollbarWidth: 'none', paddingBottom: '0.25rem' }}>
           {['ALL', 'ACTIVE', 'SUSPENDED', 'EXPELLED'].map((st) => (
             <button
               key={st}
               type="button"
               className={`${styles.tab} ${statusFilter === st ? styles.tabActive : ''}`}
               onClick={() => setStatusFilter(st)}
+              style={{ flexShrink: 0 }}
             >
               {st === 'ALL'
                 ? 'Tous'

@@ -206,8 +206,9 @@ export default function TreasuryPage() {
             Aucune transaction enregistrée pour le moment.
           </p>
         ) : (
-          <table className={styles.historyTable}>
-            <thead>
+          <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <table className={styles.historyTable}>
+              <thead>
               <tr>
                 <th>Date & Réf.</th>
                 <th>Caisse</th>
@@ -267,8 +268,9 @@ export default function TreasuryPage() {
                     </tr>
                   );
                 })}
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
