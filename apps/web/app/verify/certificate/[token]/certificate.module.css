@@ -313,11 +313,19 @@
 
 /* ─── @media print ─────────────────────────────────────────────────────────── */
 @media print {
-  body { background: #ffffff !important; }
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  body { background: #ffffff !important; margin: 0; padding: 0; }
 
   .container {
     padding: 0;
+    margin: 0;
     background: #ffffff;
+    width: 210mm;
+    height: 297mm;
   }
 
   .printHeader { display: none !important; }

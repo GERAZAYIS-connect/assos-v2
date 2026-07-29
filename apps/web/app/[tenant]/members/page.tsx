@@ -34,6 +34,11 @@ export default function MembersPage() {
   const [search, setSearch] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
+  // View and Pagination states
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const ITEMS_PER_PAGE = 10;
+
   // Modal states
   const [showInviteModal, setShowInviteModal] = useState<boolean>(false);
   const [inviteEmail, setInviteEmail] = useState<string>('');
@@ -134,6 +139,28 @@ export default function MembersPage() {
     }
   };
 
+  const handleGenerateCertificate = async (memberId: string) => {
+    try {
+      const res = await fetch(`/api/backend/associations/${tenantSlug}/members/${memberId}/certificate`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Redirect or open the print view
+        if (data.token) {
+          window.open(`/verify/certificate/${data.token}`, '_blank');
+        } else {
+          alert('Attestation générée avec succès mais aucun lien fourni.');
+        }
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.message || "Erreur lors de la génération de l'attestation");
+      }
+    } catch {
+      alert("Erreur de réseau lors de la génération.");
+    }
+  };
+
   const filteredMembers = members.filter((m) => {
     const nameStr = (m.profile?.firstName ? `${m.profile.firstName} ${m.profile.lastName || ''}` : '').toLowerCase();
     const emailStr = (m.userEmail || '').toLowerCase();
@@ -144,6 +171,14 @@ export default function MembersPage() {
     const matchesStatus = statusFilter === 'ALL' || m.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const totalPages = Math.ceil(filteredMembers.length / ITEMS_PER_PAGE);
+  const paginatedMembers = filteredMembers.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter, viewMode]);
 
   return (
     <div className={styles.container}>
@@ -169,6 +204,43 @@ export default function MembersPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+        </div>
+        
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <button 
+            type="button" 
+            onClick={() => setViewMode('grid')} 
+            style={{ 
+              background: viewMode === 'grid' ? '#000' : 'transparent', 
+              color: viewMode === 'grid' ? '#fff' : '#666',
+              border: '1px solid #ccc',
+              padding: '0.4rem',
+              borderRadius: '0.4rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            title="Vue en grille"
+          >
+            <span className="material-symbols-rounded" style={{ fontSize: '1.2rem' }}>grid_view</span>
+          </button>
+          <button 
+            type="button" 
+            onClick={() => setViewMode('table')} 
+            style={{ 
+              background: viewMode === 'table' ? '#000' : 'transparent', 
+              color: viewMode === 'table' ? '#fff' : '#666',
+              border: '1px solid #ccc',
+              padding: '0.4rem',
+              borderRadius: '0.4rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            title="Vue en tableau"
+          >
+            <span className="material-symbols-rounded" style={{ fontSize: '1.2rem' }}>table_rows</span>
+          </button>
         </div>
 
         <div className={styles.statusTabs} style={{ display: 'flex', overflowX: 'auto', whiteSpace: 'nowrap', gap: '0.5rem', scrollbarWidth: 'none', paddingBottom: '0.25rem' }}>
@@ -213,96 +285,220 @@ export default function MembersPage() {
           </button>
         </div>
       ) : (
-        <div className={styles.grid}>
-          {filteredMembers.map((member) => (
-            <div key={member.id} className={styles.card}>
-              <div className={styles.cardHeader}>
-                <div className={styles.avatar}>
-                  {member.profile?.firstName?.[0] || member.userEmail?.[0] || 'M'}
-                </div>
-                <div className={styles.memberInfo}>
-                  <h3 className={styles.memberName}>
-                    <Link href={`/${tenantSlug}/members/${member.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                      {member.profile?.firstName
-                        ? `${member.profile.firstName} ${member.profile.lastName || ''}`
-                        : member.userEmail}
-                    </Link>
-                  </h3>
-                  <span className={styles.roleBadge}>{member.role}</span>
-                </div>
-              </div>
-
-              <div className={styles.cardBody}>
-                <div className={styles.metaRow}>
-                  <span className="material-symbols-rounded">tag</span>
-                  <span>Matricule : {member.memberNumber || 'ASS-001'}</span>
-                </div>
-                <div className={styles.metaRow}>
-                  <span className="material-symbols-rounded">mail</span>
-                  <span>{member.userEmail || 'Non spécifié'}</span>
-                </div>
-                <div className={styles.metaRow}>
-                  <span className="material-symbols-rounded">call</span>
-                  <span>{member.userPhone || 'Non spécifié'}</span>
-                </div>
-
-                {member.profile?.proxyName && (
-                  <div className={styles.proxyBadge}>
-                    <span className="material-symbols-rounded">support_agent</span>
-                    <span>Mandataire Local (Diaspora) : <strong>{member.profile.proxyName}</strong></span>
+        <>
+          {viewMode === 'grid' ? (
+            <div className={styles.grid}>
+              {paginatedMembers.map((member) => (
+                <div key={member.id} className={styles.card}>
+                  <div className={styles.cardHeader}>
+                    <div className={styles.avatar}>
+                      {member.profile?.firstName?.[0] || member.userEmail?.[0] || 'M'}
+                    </div>
+                    <div className={styles.memberInfo}>
+                      <h3 className={styles.memberName}>
+                        <Link href={`/${tenantSlug}/members/${member.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                          {member.profile?.firstName
+                            ? `${member.profile.firstName} ${member.profile.lastName || ''}`
+                            : member.userEmail}
+                        </Link>
+                      </h3>
+                      <span className={styles.roleBadge}>{member.role}</span>
+                    </div>
                   </div>
-                )}
-              </div>
 
-              <div className={styles.cardFooter}>
-                <span
-                  className={`${styles.statusPill} ${
-                    styles[`status_${member.status.toLowerCase()}`]
-                  }`}
-                >
-                  {member.status === 'ACTIVE'
-                    ? 'Actif'
-                    : member.status === 'SUSPENDED'
-                    ? 'Suspendu'
-                    : 'Radié'}
-                </span>
+                  <div className={styles.cardBody}>
+                    <div className={styles.metaRow}>
+                      <span className="material-symbols-rounded">tag</span>
+                      <span>Matricule : {member.memberNumber || 'ASS-001'}</span>
+                    </div>
+                    <div className={styles.metaRow}>
+                      <span className="material-symbols-rounded">mail</span>
+                      <span>{member.userEmail || 'Non spécifié'}</span>
+                    </div>
+                    <div className={styles.metaRow}>
+                      <span className="material-symbols-rounded">call</span>
+                      <span>{member.userPhone || 'Non spécifié'}</span>
+                    </div>
 
-                <div className={styles.actions}>
-                  {member.status === 'ACTIVE' && (
-                    <button
-                      type="button"
-                      className={styles.actionBtn}
-                      title="Suspendre le membre"
-                      onClick={() => handleStatusChange(member.id, 'SUSPENDED')}
+                    {member.profile?.proxyName && (
+                      <div className={styles.proxyBadge}>
+                        <span className="material-symbols-rounded">support_agent</span>
+                        <span>Mandataire Local (Diaspora) : <strong>{member.profile.proxyName}</strong></span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className={styles.cardFooter}>
+                    <span
+                      className={`${styles.statusPill} ${
+                        styles[`status_${member.status.toLowerCase()}`]
+                      }`}
                     >
-                      <span className="material-symbols-rounded">block</span>
-                    </button>
-                  )}
-                  {member.status === 'SUSPENDED' && (
-                    <button
-                      type="button"
-                      className={styles.actionBtn}
-                      title="Réactiver le membre"
-                      onClick={() => handleStatusChange(member.id, 'ACTIVE')}
-                    >
-                      <span className="material-symbols-rounded">check_circle</span>
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    className={styles.actionBtn}
-                    title="Générer l'Attestation Officieuse PDF"
-                    onClick={() =>
-                      alert(`Attestation générée avec succès pour le membre ID: ${member.id}`)
-                    }
-                  >
-                    <span className="material-symbols-rounded">verified</span>
-                  </button>
+                      {member.status === 'ACTIVE'
+                        ? 'Actif'
+                        : member.status === 'SUSPENDED'
+                        ? 'Suspendu'
+                        : 'Radié'}
+                    </span>
+
+                    <div className={styles.actions}>
+                      {member.status === 'ACTIVE' && (
+                        <button
+                          type="button"
+                          className={styles.actionBtn}
+                          title="Suspendre le membre"
+                          onClick={() => handleStatusChange(member.id, 'SUSPENDED')}
+                        >
+                          <span className="material-symbols-rounded">block</span>
+                        </button>
+                      )}
+                      {member.status === 'SUSPENDED' && (
+                        <button
+                          type="button"
+                          className={styles.actionBtn}
+                          title="Réactiver le membre"
+                          onClick={() => handleStatusChange(member.id, 'ACTIVE')}
+                        >
+                          <span className="material-symbols-rounded">check_circle</span>
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className={styles.actionBtn}
+                        title="Radier le membre (Exclusion définitive)"
+                        onClick={() => {
+                          if (confirm('Êtes-vous sûr de vouloir radier définitivement ce membre ?')) {
+                            handleStatusChange(member.id, 'EXPELLED');
+                          }
+                        }}
+                      >
+                        <span className="material-symbols-rounded">person_remove</span>
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.actionBtn}
+                        title="Générer l'Attestation Officieuse PDF"
+                        onClick={() => handleGenerateCertificate(member.id)}
+                      >
+                        <span className="material-symbols-rounded">verified</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
+          ) : (
+            <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', background: '#fff', border: '1px solid #e0e0e0', borderRadius: '0.75rem', marginBottom: '1.5rem' }}>
+              <table className={styles.table} style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ background: '#fafafa', borderBottom: '1px solid #e0e0e0' }}>
+                    <th style={{ padding: '1rem', fontSize: '0.8rem', textTransform: 'uppercase', color: '#444' }}>Membre</th>
+                    <th style={{ padding: '1rem', fontSize: '0.8rem', textTransform: 'uppercase', color: '#444' }}>Contact</th>
+                    <th style={{ padding: '1rem', fontSize: '0.8rem', textTransform: 'uppercase', color: '#444' }}>Statut</th>
+                    <th style={{ padding: '1rem', fontSize: '0.8rem', textTransform: 'uppercase', color: '#444' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedMembers.map((member) => (
+                    <tr key={member.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                      <td style={{ padding: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          <div className={styles.avatar} style={{ width: '36px', height: '36px', fontSize: '1rem' }}>
+                            {member.profile?.firstName?.[0] || member.userEmail?.[0] || 'M'}
+                          </div>
+                          <div>
+                            <Link href={`/${tenantSlug}/members/${member.id}`} style={{ textDecoration: 'none', color: '#000', fontWeight: 600 }}>
+                              {member.profile?.firstName ? `${member.profile.firstName} ${member.profile.lastName || ''}` : member.userEmail}
+                            </Link>
+                            <div style={{ fontSize: '0.75rem', color: '#666' }}>{member.role} • {member.memberNumber || 'ASS-001'}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ padding: '1rem', fontSize: '0.85rem' }}>
+                        <div>{member.userEmail || '-'}</div>
+                        <div style={{ color: '#666' }}>{member.userPhone || '-'}</div>
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        <span
+                          className={`${styles.statusPill} ${
+                            styles[`status_${member.status.toLowerCase()}`]
+                          }`}
+                        >
+                          {member.status === 'ACTIVE' ? 'Actif' : member.status === 'SUSPENDED' ? 'Suspendu' : 'Radié'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        <div style={{ display: 'flex', gap: '0.25rem' }}>
+                          {member.status === 'ACTIVE' && (
+                            <button
+                              type="button"
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#666', padding: '0.25rem' }}
+                              title="Suspendre"
+                              onClick={() => handleStatusChange(member.id, 'SUSPENDED')}
+                            >
+                              <span className="material-symbols-rounded">block</span>
+                            </button>
+                          )}
+                          {member.status === 'SUSPENDED' && (
+                            <button
+                              type="button"
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#15803d', padding: '0.25rem' }}
+                              title="Réactiver"
+                              onClick={() => handleStatusChange(member.id, 'ACTIVE')}
+                            >
+                              <span className="material-symbols-rounded">check_circle</span>
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#991b1b', padding: '0.25rem' }}
+                            title="Radier (Exclusion définitive)"
+                            onClick={() => {
+                              if (confirm('Êtes-vous sûr de vouloir radier définitivement ce membre ?')) {
+                                handleStatusChange(member.id, 'EXPELLED');
+                              }
+                            }}
+                          >
+                            <span className="material-symbols-rounded">person_remove</span>
+                          </button>
+                          <button
+                            type="button"
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#000', padding: '0.25rem' }}
+                            title="Générer Attestation"
+                            onClick={() => handleGenerateCertificate(member.id)}
+                          >
+                            <span className="material-symbols-rounded">verified</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1rem' }}>
+              <button 
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                style={{ background: '#fff', border: '1px solid #ccc', borderRadius: '0.5rem', padding: '0.5rem 1rem', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1 }}
+              >
+                Précédent
+              </button>
+              <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Page {currentPage} sur {totalPages}</span>
+              <button 
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                style={{ background: '#fff', border: '1px solid #ccc', borderRadius: '0.5rem', padding: '0.5rem 1rem', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.5 : 1 }}
+              >
+                Suivant
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Invite Modal */}
