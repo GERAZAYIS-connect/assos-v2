@@ -77,6 +77,22 @@ export default function LandingPage() {
           .mobile-menu-btn { display: none !important; }
           .mobile-drawer { display: none !important; }
         }
+        @media (max-width: 992px) {
+          .tech-grid {
+            display: flex !important;
+            flex-direction: column;
+          }
+          .tech-grid > div {
+            width: 100% !important;
+          }
+          .bottom-card {
+            flex-direction: column !important;
+            text-align: center;
+          }
+          .bottom-card-text {
+            padding-right: 0 !important;
+          }
+        }
       `}</style>
 
       {/* Schema.org SEO */}
@@ -733,24 +749,6 @@ export default function LandingPage() {
 
           </div>
         </div>
-        <style jsx>{`
-          @media (max-width: 992px) {
-            .tech-grid {
-              display: flex !important;
-              flex-direction: column;
-            }
-            .tech-grid > div {
-              width: 100% !important;
-            }
-            .bottom-card {
-              flex-direction: column !important;
-              text-align: center;
-            }
-            .bottom-card-text {
-              padding-right: 0 !important;
-            }
-          }
-        `}</style>
       </section>
 
       {/* 5. How It Works Section */}
