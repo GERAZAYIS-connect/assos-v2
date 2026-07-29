@@ -184,7 +184,7 @@ export default function SettingsPage() {
       priceAnnual: '55 000 XAF',
       monthlyLink: 'https://business.freemopay.com/pay-link/a22a9b45a71fd5068e6cd156d04fd8',
       annualLink: 'https://business.freemopay.com/pay-link/1688817f28228020749c2a41321e71',
-      color: '#2563eb',
+      color: '#000000',
       features: [
         '1 association autorisée',
         'Jusqu’à 50 membres',
@@ -201,7 +201,7 @@ export default function SettingsPage() {
       priceAnnual: '165 000 XAF',
       monthlyLink: 'https://business.freemopay.com/pay-link/d43fb1dabda88266f9a8a4dd99acb6',
       annualLink: 'https://business.freemopay.com/pay-link/63c0fdd1b47df54316a8816d997a35',
-      color: '#7c3aed',
+      color: '#000000',
       features: [
         'Jusqu’à 3 associations',
         'Jusqu’à 200 membres',
@@ -218,7 +218,7 @@ export default function SettingsPage() {
       priceAnnual: '385 000 XAF',
       monthlyLink: 'https://business.freemopay.com/pay-link/27b1282a2bbb6a3f1ab8a0f12c15e6',
       annualLink: 'https://business.freemopay.com/pay-link/bc3ec7763ea26e5f40fd0409a1b814',
-      color: '#10b981',
+      color: '#000000',
       features: [
         'Associations & membres illimités',
         'Module de Vote & AG complet',
@@ -277,13 +277,13 @@ export default function SettingsPage() {
 
       {/* Tabs Menu */}
       <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid #e2e8f0', marginBottom: '2rem', overflowX: 'auto' }}>
-        <button type="button" onClick={() => setActiveTab('GENERAL')} style={{ background: 'none', border: 'none', borderBottom: activeTab === 'GENERAL' ? '2px solid #2563eb' : '2px solid transparent', padding: '0.75rem 1rem', fontWeight: 600, color: activeTab === 'GENERAL' ? '#2563eb' : '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}>
+        <button type="button" onClick={() => setActiveTab('GENERAL')} style={{ background: 'none', border: 'none', borderBottom: activeTab === 'GENERAL' ? '2px solid #000000' : '2px solid transparent', padding: '0.75rem 1rem', fontWeight: 600, color: activeTab === 'GENERAL' ? '#000000' : '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}>
           <span className="material-symbols-rounded">domain</span> Identité & Paramètres
         </button>
-        <button type="button" onClick={() => setActiveTab('FINANCE')} style={{ background: 'none', border: 'none', borderBottom: activeTab === 'FINANCE' ? '2px solid #10b981' : '2px solid transparent', padding: '0.75rem 1rem', fontWeight: 600, color: activeTab === 'FINANCE' ? '#10b981' : '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}>
+        <button type="button" onClick={() => setActiveTab('FINANCE')} style={{ background: 'none', border: 'none', borderBottom: activeTab === 'FINANCE' ? '2px solid #000000' : '2px solid transparent', padding: '0.75rem 1rem', fontWeight: 600, color: activeTab === 'FINANCE' ? '#000000' : '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}>
           <span className="material-symbols-rounded">payments</span> Règles Financières
         </button>
-        <button type="button" onClick={() => setActiveTab('SUBSCRIPTION')} style={{ background: 'none', border: 'none', borderBottom: activeTab === 'SUBSCRIPTION' ? '2px solid #7c3aed' : '2px solid transparent', padding: '0.75rem 1rem', fontWeight: 600, color: activeTab === 'SUBSCRIPTION' ? '#7c3aed' : '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}>
+        <button type="button" onClick={() => setActiveTab('SUBSCRIPTION')} style={{ background: 'none', border: 'none', borderBottom: activeTab === 'SUBSCRIPTION' ? '2px solid #000000' : '2px solid transparent', padding: '0.75rem 1rem', fontWeight: 600, color: activeTab === 'SUBSCRIPTION' ? '#000000' : '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}>
           <span className="material-symbols-rounded">stars</span> Abonnement SaaS
         </button>
       </div>
@@ -297,13 +297,13 @@ export default function SettingsPage() {
           {activeTab === 'GENERAL' && (
           <div className={styles.card} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: '1.75rem' }}>
             <h2 style={{ fontSize: '1.2rem', fontWeight: 800, margin: '0 0 1.25rem 0', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0f172a' }}>
-              <span className="material-symbols-rounded" style={{ color: '#2563eb' }}>domain</span>
+              <span className="material-symbols-rounded" style={{ color: '#000000' }}>domain</span>
               Identité Officielle & Juridique
             </h2>
 
             {/* Avatar / Logo Section */}
             <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', marginBottom: '1.5rem', padding: '1rem', background: '#f8fafc', borderRadius: 12, border: '1px dashed #cbd5e1' }}>
-              <div style={{ width: 64, height: 64, borderRadius: 16, background: logoUrl ? '#fff' : 'linear-gradient(135deg, #6366f1, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.5rem', fontWeight: 800, overflow: 'hidden', flexShrink: 0, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+              <div style={{ width: 64, height: 64, borderRadius: 16, background: logoUrl ? '#fff' : '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.5rem', fontWeight: 800, overflow: 'hidden', flexShrink: 0, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
                 {logoUrl ? (
                   <img src={logoUrl} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
@@ -320,7 +320,7 @@ export default function SettingsPage() {
                     type="button"
                     disabled={!isPresident}
                     onClick={() => fileInputRef.current?.click()}
-                    style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '0.6rem 1rem', borderRadius: 8, fontWeight: 600, cursor: isPresident ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}
+                    style={{ background: '#000000', color: '#fff', border: 'none', padding: '0.6rem 1rem', borderRadius: 8, fontWeight: 600, cursor: isPresident ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}
                   >
                     <span className="material-symbols-rounded" style={{ fontSize: '1.2rem' }}>upload</span>
                     Uploader une image
@@ -451,7 +451,7 @@ export default function SettingsPage() {
           {activeTab === 'FINANCE' && (
           <div className={styles.card} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: '1.75rem' }}>
             <h2 style={{ fontSize: '1.2rem', fontWeight: 800, margin: '0 0 1.25rem 0', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0f172a' }}>
-              <span className="material-symbols-rounded" style={{ color: '#10b981' }}>payments</span>
+              <span className="material-symbols-rounded" style={{ color: '#000000' }}>payments</span>
               Règles Financières Assoc.
             </h2>
 
@@ -503,7 +503,7 @@ export default function SettingsPage() {
             </button>
 
             <Link href={`/${tenantSlug}/settings/privacy`} style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a', textDecoration: 'none', padding: '0.85rem', borderRadius: 12, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
-              <span className="material-symbols-rounded" style={{ color: '#2563eb' }}>shield</span>
+              <span className="material-symbols-rounded" style={{ color: '#000000' }}>shield</span>
               Vie Privée
             </Link>
           </div>
@@ -662,7 +662,7 @@ export default function SettingsPage() {
             {/* Modal Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.5rem', borderBottom: '1px solid #f1f5f9' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span className="material-symbols-rounded" style={{ color: '#10b981' }}>lock</span>
+                <span className="material-symbols-rounded" style={{ color: '#000000' }}>lock</span>
                 <strong style={{ fontSize: '1rem', color: '#0f172a' }}>Paiement Sécurisé Mobile Money / Carte</strong>
               </div>
               <button

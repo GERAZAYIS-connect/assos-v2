@@ -12,14 +12,7 @@ export default function TenantDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<{
     membersCount: number;
-    totalTreasuryBalance: number;
-    tontinesCount: number;
-    loansCount: number;
-    totalLoansAmount: number;
-    unreadNotifications: number;
-    budgetExecutionRate: number;
-    upcomingMeetingTitle: string | null;
-  }>({
+  const [metrics, setMetrics] = useState({
     membersCount: 0,
     totalTreasuryBalance: 0,
     tontinesCount: 0,
@@ -27,10 +20,11 @@ export default function TenantDashboardPage() {
     totalLoansAmount: 0,
     unreadNotifications: 0,
     budgetExecutionRate: 0,
-    upcomingMeetingTitle: null,
+    upcomingMeetingTitle: null as string | null,
   });
 
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  const [activityFilter, setActivityFilter] = useState<'ALL' | 'DEPOSIT' | 'WITHDRAWAL'>('ALL');
 
   useEffect(() => {
     if (tenantSlug) {
@@ -98,8 +92,10 @@ export default function TenantDashboardPage() {
         if (Array.isArray(txData)) {
           txList = txData.map((tx: any) => ({
             id: tx.id,
-            title: tx.type === 'DEPOSIT' ? `Dépôt / Encaissement (${tx.reference})` : `Décaissement / Sortie (${tx.reference})`,
-            message: `${tx.amount?.toLocaleString('fr-FR')} FCFA — ${tx.description || 'Opération de trésorerie'}`,
+            title: tx.type === 'DEPOSIT' ? 'Dépôt / Encaissement' : 'Décaissement / Sortie',
+            message: tx.description || 'Opération de trésorerie',
+            amount: tx.amount,
+            reference: tx.reference,
             sentAt: tx.createdAt,
             type: 'TRANSACTION',
             isDeposit: tx.type === 'DEPOSIT',
@@ -277,11 +273,18 @@ export default function TenantDashboardPage() {
             </div>
 
             {/* Main Center Section: Recent Activity & Live Treasury Stream */}
-            <div className={styles.section} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: '1.5rem' }}>
-              <h2 className={styles.sectionTitle} style={{ fontSize: '1.2rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span className="material-symbols-rounded" style={{ color: '#000000' }}>history</span>
-                Journal d'Activité Récente & Opérations de Trésorerie (Données Réelles)
-              </h2>
+            <div className={styles.section} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: '1.5rem', overflowX: 'auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <h2 className={styles.sectionTitle} style={{ fontSize: '1.2rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span className="material-symbols-rounded" style={{ color: '#000000' }}>history</span>
+                  Opérations de Trésorerie & Activités
+                </h2>
+                <div style={{ display: 'flex', gap: '0.5rem', background: '#f1f5f9', padding: '0.25rem', borderRadius: 999 }}>
+                  <button type="button" onClick={() => setActivityFilter('ALL')} style={{ border: 'none', background: activityFilter === 'ALL' ? '#ffffff' : 'transparent', color: activityFilter === 'ALL' ? '#0f172a' : '#64748b', padding: '0.4rem 1rem', borderRadius: 999, fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', boxShadow: activityFilter === 'ALL' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none' }}>Toutes</button>
+                  <button type="button" onClick={() => setActivityFilter('DEPOSIT')} style={{ border: 'none', background: activityFilter === 'DEPOSIT' ? '#ffffff' : 'transparent', color: activityFilter === 'DEPOSIT' ? '#10b981' : '#64748b', padding: '0.4rem 1rem', borderRadius: 999, fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', boxShadow: activityFilter === 'DEPOSIT' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none' }}>Encaissements</button>
+                  <button type="button" onClick={() => setActivityFilter('WITHDRAWAL')} style={{ border: 'none', background: activityFilter === 'WITHDRAWAL' ? '#ffffff' : 'transparent', color: activityFilter === 'WITHDRAWAL' ? '#dc2626' : '#64748b', padding: '0.4rem 1rem', borderRadius: 999, fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', boxShadow: activityFilter === 'WITHDRAWAL' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none' }}>Décaissements</button>
+                </div>
+              </div>
 
               {loading ? (
                 <p style={{ fontStyle: 'italic', color: '#666', fontSize: '0.9rem' }}>Chargement de l'activité...</p>
@@ -291,46 +294,63 @@ export default function TenantDashboardPage() {
                   <p style={{ fontSize: '0.9rem' }}>Aucune transaction récente enregistrée.</p>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {recentActivities.map((act) => (
-                    <div
-                      key={act.id}
-                      style={{
-                        background: act.type === 'TRANSACTION' ? (act.isDeposit ? '#f0fdf4' : '#fef2f2') : '#ffffff',
-                        border: '1px solid #e2e8f0',
-                        borderLeft: `4px solid ${act.type === 'TRANSACTION' ? (act.isDeposit ? '#10b981' : '#dc2626') : '#000000'}`,
-                        borderRadius: 10,
-                        padding: '0.85rem 1.25rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '1rem',
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <span
-                          className="material-symbols-rounded"
-                          style={{
-                            background: '#ffffff',
-                            padding: '0.5rem',
-                            borderRadius: 8,
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', textAlign: 'left' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #e2e8f0', color: '#64748b', fontSize: '0.8rem', textTransform: 'uppercase' }}>
+                      <th style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>Date</th>
+                      <th style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>Type</th>
+                      <th style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>Référence</th>
+                      <th style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>Description</th>
+                      <th style={{ padding: '0.75rem 1rem', fontWeight: 600, textAlign: 'right' }}>Montant</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentActivities.filter(act => {
+                      if (activityFilter === 'ALL') return true;
+                      if (activityFilter === 'DEPOSIT') return act.type === 'TRANSACTION' && act.isDeposit;
+                      if (activityFilter === 'WITHDRAWAL') return act.type === 'TRANSACTION' && !act.isDeposit;
+                      return true;
+                    }).map((act) => (
+                      <tr key={act.id} style={{ borderBottom: '1px solid #f1f5f9', background: '#fff' }}>
+                        <td style={{ padding: '1rem', whiteSpace: 'nowrap', color: '#475569' }}>
+                          {new Date(act.sentAt).toLocaleDateString('fr-FR')}
+                        </td>
+                        <td style={{ padding: '1rem' }}>
+                          <span style={{ 
+                            display: 'inline-flex', alignItems: 'center', gap: '0.35rem', 
+                            padding: '0.3rem 0.6rem', borderRadius: 999, fontSize: '0.75rem', fontWeight: 700,
+                            background: act.type === 'TRANSACTION' ? (act.isDeposit ? '#f0fdf4' : '#fef2f2') : '#f8fafc',
                             color: act.type === 'TRANSACTION' ? (act.isDeposit ? '#10b981' : '#dc2626') : '#000000',
-                            border: '1px solid #e2e8f0',
-                          }}
-                        >
-                          {act.type === 'TRANSACTION' ? (act.isDeposit ? 'arrow_downward' : 'arrow_upward') : 'notifications'}
-                        </span>
-                        <div>
-                          <strong style={{ fontSize: '0.92rem', color: '#0f172a', display: 'block' }}>{act.title}</strong>
-                          <span style={{ fontSize: '0.82rem', color: '#475569' }}>{act.message}</span>
-                        </div>
-                      </div>
-                      <span style={{ fontSize: '0.78rem', color: '#64748b', whiteSpace: 'nowrap', fontWeight: 600 }}>
-                        {new Date(act.sentAt).toLocaleDateString('fr-FR')}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                            border: `1px solid ${act.type === 'TRANSACTION' ? (act.isDeposit ? '#bbf7d0' : '#fecaca') : '#e2e8f0'}`
+                          }}>
+                            {act.type === 'TRANSACTION' ? (act.isDeposit ? 'DÉPÔT' : 'DÉCAISSEMENT') : 'NOTIF'}
+                          </span>
+                        </td>
+                        <td style={{ padding: '1rem', fontWeight: 600, color: '#0f172a' }}>
+                          {act.reference || '—'}
+                        </td>
+                        <td style={{ padding: '1rem', color: '#475569', maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {act.message}
+                        </td>
+                        <td style={{ padding: '1rem', textAlign: 'right', fontWeight: 700, color: act.type === 'TRANSACTION' ? (act.isDeposit ? '#10b981' : '#0f172a') : '#0f172a' }}>
+                          {act.amount ? `${act.amount.toLocaleString('fr-FR')} FCFA` : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                    {recentActivities.filter(act => {
+                      if (activityFilter === 'ALL') return true;
+                      if (activityFilter === 'DEPOSIT') return act.type === 'TRANSACTION' && act.isDeposit;
+                      if (activityFilter === 'WITHDRAWAL') return act.type === 'TRANSACTION' && !act.isDeposit;
+                      return true;
+                    }).length === 0 && (
+                      <tr>
+                        <td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>
+                          Aucune donnée pour ce filtre.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               )}
             </div>
           </div>
