@@ -861,7 +861,7 @@ export default function LandingPage() {
             Assos 2.0 se connecte directement aux principaux réseaux de télécommunications du continent pour automatiser vos flux financiers.
           </p>
 
-          <div style={{ width: '100%', maxWidth: 700, margin: '0 auto', position: 'relative', minHeight: 400, background: 'url("/galerie/integrations_simple.png") no-repeat center center/contain' }}>
+          <div style={{ width: 'full', margin: '0 auto', position: 'relative', minHeight: 400, background: 'url("/galerie/integrations_simple.png") no-repeat center center/contain' }}>
           </div>
         </div>
       </section>
