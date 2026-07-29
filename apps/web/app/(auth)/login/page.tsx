@@ -40,7 +40,9 @@ export default function LoginPage() {
               return;
             }
           }
-        } catch {}
+        } catch (e) {
+          console.error("Erreur lors de la récupération des associations:", e);
+        }
         router.push('/create-association');
       }
     } catch (err) {
