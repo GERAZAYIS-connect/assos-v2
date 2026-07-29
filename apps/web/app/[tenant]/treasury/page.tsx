@@ -143,7 +143,7 @@ export default function TreasuryPage() {
           <h2>Solde Global</h2>
           <p className={styles.statValue}>{totalBalance.toLocaleString('fr-FR')} XAF</p>
         </div>
-        <span className="material-symbols-rounded" style={{ fontSize: '3rem', color: 'rgba(255,255,255,0.2)' }}>
+        <span className="material-symbols-rounded" style={{ fontSize: '3rem', color: 'rgba(255,255,255,0.6)' }}>
           savings
         </span>
       </div>

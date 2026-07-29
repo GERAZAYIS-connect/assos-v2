@@ -26,7 +26,7 @@
 
   /* --- Text Colors --- */
   --text-primary: #0d0d0d;
-  --text-secondary: #1a1a1a88;
+  --text-secondary: #1a1a1acc;
 
   /* --- Dynamic Tenant Branding (overridden per-tenant via style attr) --- */
   --color-primary: #0d0d0d;
