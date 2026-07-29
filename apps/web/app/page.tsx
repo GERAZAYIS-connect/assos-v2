@@ -7,6 +7,7 @@ export default function LandingPage() {
   const [isAnnual, setIsAnnual] = useState(false);
   const [email, setEmail] = useState('');
   const [activeCard, setActiveCard] = useState<number>(0);
+  const [activeStep, setActiveStep] = useState<number>(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const jsonLd = {
@@ -752,41 +753,98 @@ export default function LandingPage() {
       </section>
 
       {/* 5. How It Works Section */}
-      <section id="fonctionnement" style={{ padding: '5rem 1.25rem', background: '#ffffff' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '3.5rem', alignItems: 'center' }}>
+      <section id="fonctionnement" style={{ padding: '6rem 1.25rem', background: '#f8fafc' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           
-          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 24, padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div style={{ width: '100%', height: 240, borderRadius: 16, overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-              <img src="/cta/vl-cta-thumb-1.1.png" alt="Créer un espace" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            </div>
-            <div>
-              <h4 style={{ fontSize: '1.15rem', fontWeight: 800, margin: '0 0 0.5rem 0' }}>Ouverture de compte</h4>
-              <p style={{ color: '#475569', fontSize: '0.88rem', margin: 0 }}>Configurez les membres de l'association, ajoutez leurs coordonnées de téléphone et assignez leurs rôles en 1 clic.</p>
-            </div>
-          </div>
-
-          <div>
-            <div style={{ background: '#f1f5f9', color: '#000', fontSize: '0.75rem', fontWeight: 800, padding: '0.35rem 0.85rem', borderRadius: 999, display: 'inline-block', marginBottom: '1rem' }}>
-              COMMENT ÇA FONCTIONNE
+          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+            <div style={{ background: '#e0e7ff', color: '#4f46e5', fontSize: '0.8rem', fontWeight: 800, padding: '0.4rem 1rem', borderRadius: 999, display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
+              <span className="material-symbols-rounded" style={{ fontSize: '1rem' }}>auto_awesome</span>
+              Des Étapes Simples
             </div>
             
-            <h2 style={{ fontSize: '2.25rem', fontWeight: 900, color: '#0f172a', margin: '0 0 1.75rem 0', letterSpacing: '-0.03em' }}>
+            <h2 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#312e81', margin: 0, letterSpacing: '-0.02em' }}>
               Comment fonctionne Assos 2.0
             </h2>
+          </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div style={{ padding: '1.1rem 1.25rem', borderLeft: '3px solid #0f172a', background: '#f8fafc', borderRadius: '0 16px 16px 0' }}>
-                <strong style={{ display: 'block', fontSize: '1rem', color: '#0f172a' }}>1. Inviter vos membres</strong>
-                <span style={{ fontSize: '0.85rem', color: '#475569' }}>Chaque membre reçoit une invitation par SMS avec son lien d'accès.</span>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '4rem', alignItems: 'center' }}>
+            
+            {/* Left Column: Image Card */}
+            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 24, padding: '1.5rem', boxShadow: '0 20px 40px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{ height: 320, background: '#f1f5f9', borderRadius: 16, overflow: 'hidden', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img 
+                  src={
+                    activeStep === 0 ? "/galerie/how_step_1_1785316382062.png" :
+                    activeStep === 1 ? "/galerie/how_step_2_1785316393571.png" :
+                    activeStep === 2 ? "/galerie/how_step_3_1785316404604.png" :
+                    "/galerie/how_step_4_1785316415100.png"
+                  } 
+                  alt="Étape de fonctionnement" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity 0.3s ease' }} 
+                />
               </div>
-              <div style={{ padding: '1.1rem 1.25rem', borderLeft: '3px solid #6366f1', background: '#f8fafc', borderRadius: '0 16px 16px 0' }}>
-                <strong style={{ display: 'block', fontSize: '1rem', color: '#0f172a' }}>2. Intégrer les passerelles Mobile Money</strong>
-                <span style={{ fontSize: '0.85rem', color: '#475569' }}>Liez vos numéros MTN MoMo et Orange Money pour la collecte.</span>
+              <div style={{ textAlign: 'center' }}>
+                <h4 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0f172a', margin: '0 0 0.75rem 0' }}>
+                  {activeStep === 0 && 'Ouverture de compte facile'}
+                  {activeStep === 1 && 'Inviter vos membres'}
+                  {activeStep === 2 && 'Intégrer Mobile Money'}
+                  {activeStep === 3 && 'Suivi & Rapports certifiés'}
+                </h4>
+                <p style={{ color: '#475569', fontSize: '0.9rem', margin: 0, lineHeight: 1.5 }}>
+                  {activeStep === 0 && 'Configurez les membres de l\'association, ajoutez leurs coordonnées de téléphone et assignez leurs rôles en quelques clics.'}
+                  {activeStep === 1 && 'Chaque membre reçoit une invitation par SMS ou email avec son identifiant sécurisé et son mot de passe généré.'}
+                  {activeStep === 2 && 'Liez vos numéros MTN MoMo et Orange Money pour la collecte automatique des cotisations et des paiements.'}
+                  {activeStep === 3 && 'Générez et exportez vos procès-verbaux, bilans financiers, fiches de présence et attestations membres.'}
+                </p>
               </div>
-              <div style={{ padding: '1.1rem 1.25rem', borderLeft: '3px solid #10b981', background: '#f8fafc', borderRadius: '0 16px 16px 0' }}>
-                <strong style={{ display: 'block', fontSize: '1rem', color: '#0f172a' }}>3. Suivi & Rapports certifiés</strong>
-                <span style={{ fontSize: '0.85rem', color: '#475569' }}>Générez vos procès-verbaux, fiches de présence et bilans de tontines.</span>
-              </div>
+            </div>
+
+            {/* Right Column: Step Buttons */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              
+              {[
+                { title: '1. Ouverture de compte facile', icon: 'person_add' },
+                { title: '2. Inviter vos membres', icon: 'group_add' },
+                { title: '3. Intégrer Mobile Money', icon: 'payments' },
+                { title: '4. Suivi & Rapports certifiés', icon: 'monitoring' }
+              ].map((step, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveStep(idx)}
+                  style={{
+                    background: activeStep === idx ? '#4f46e5' : 'transparent',
+                    border: activeStep === idx ? '1px solid #4f46e5' : '1px solid #cbd5e1',
+                    borderRadius: 999,
+                    padding: '1rem 1.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: activeStep === idx ? '0 10px 20px rgba(79, 70, 229, 0.2)' : 'none',
+                    textAlign: 'left',
+                    width: '100%'
+                  }}
+                >
+                  <div style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '50%',
+                    background: activeStep === idx ? 'rgba(255,255,255,0.2)' : '#f1f5f9',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: activeStep === idx ? '#ffffff' : '#4f46e5',
+                    flexShrink: 0
+                  }}>
+                    <span className="material-symbols-rounded" style={{ fontSize: '1.1rem' }}>{step.icon}</span>
+                  </div>
+                  <strong style={{ fontSize: '1rem', color: activeStep === idx ? '#ffffff' : '#0f172a', fontWeight: 700 }}>
+                    {step.title}
+                  </strong>
+                </button>
+              ))}
+
             </div>
           </div>
 
