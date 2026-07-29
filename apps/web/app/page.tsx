@@ -678,7 +678,7 @@ export default function LandingPage() {
           <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
             <div style={{ background: '#e0e7ff', color: '#4f46e5', fontSize: '0.8rem', fontWeight: 800, padding: '0.4rem 1rem', borderRadius: 999, display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
               <span className="material-symbols-rounded" style={{ fontSize: '1rem' }}>auto_awesome_mosaic</span>
-              Smart Tools For Busy Teams
+              Outils Intelligents pour Équipes Actives
             </div>
             <h2 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#312e81', margin: 0, letterSpacing: '-0.02em', maxWidth: 600, marginInline: 'auto', lineHeight: 1.2 }}>
               Une technologie innovante qui propulse vos résultats
