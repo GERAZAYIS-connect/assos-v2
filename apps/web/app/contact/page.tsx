@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Footer from '../../components/Footer';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -81,7 +82,7 @@ export default function ContactPage() {
             </div>
             <div>
               <strong style={{ display: 'block', fontSize: '1.1rem', marginBottom: '0.25rem' }}>Notre Adresse</strong>
-              <span style={{ color: '#52525b', fontSize: '0.9rem' }}>8708 Technology Forest Pl Suite 125, The Woodland TX 77381</span>
+              <span style={{ color: '#52525b', fontSize: '0.9rem' }}>Yaoundé, Cameroun</span>
             </div>
           </div>
           {/* Card 2 */}
@@ -91,7 +92,7 @@ export default function ContactPage() {
             </div>
             <div>
               <strong style={{ display: 'block', fontSize: '1.1rem', marginBottom: '0.25rem' }}>Appelez-nous</strong>
-              <span style={{ color: '#52525b', fontSize: '0.9rem' }}>(+123) 342-456-7890</span>
+              <span style={{ color: '#52525b', fontSize: '0.9rem' }}>+237 695183768 / 620104482</span>
             </div>
           </div>
           {/* Card 3 */}
@@ -101,7 +102,7 @@ export default function ContactPage() {
             </div>
             <div>
               <strong style={{ display: 'block', fontSize: '1.1rem', marginBottom: '0.25rem' }}>Envoyez un email</strong>
-              <span style={{ color: '#52525b', fontSize: '0.9rem' }}>info@assos2.com</span>
+              <span style={{ color: '#52525b', fontSize: '0.9rem' }}>gerazayisti@gmail.com</span>
             </div>
           </div>
         </div>
@@ -167,57 +168,50 @@ export default function ContactPage() {
             </button>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{ background: '#000000', color: '#ffffff', padding: '1.5rem', borderRadius: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', cursor: 'pointer' }}>
-              <strong style={{ fontSize: '1rem' }}>Quelles intégrations supporte Assos 2.0 ?</strong>
-              <span className="material-symbols-rounded">expand_less</span>
+            <div style={{ background: '#ffffff', color: '#000000', border: '1px solid #e4e4e7', padding: '1.5rem', borderRadius: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', marginBottom: '1rem' }}>
+                <strong style={{ fontSize: '1rem' }}>Assos 2.0 est-il adapté aux petites associations ?</strong>
+                <span className="material-symbols-rounded">expand_less</span>
+              </div>
+              <p style={{ color: '#52525b', fontSize: '0.95rem', margin: 0, lineHeight: 1.5 }}>
+                Oui ! Assos 2.0 est conçu pour s'adapter à la taille de votre association, des petites tontines familiales aux grandes mutuelles, en s'ajustant à vos besoins.
+              </p>
             </div>
-            <div style={{ background: '#ffffff', color: '#000000', border: '1px solid #e4e4e7', padding: '1.5rem', borderRadius: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-              <strong style={{ fontSize: '1rem' }}>Assos 2.0 est-il adapté aux petites associations ?</strong>
-              <span className="material-symbols-rounded">expand_more</span>
+            
+            <div style={{ background: '#ffffff', color: '#000000', border: '1px solid #e4e4e7', padding: '1.5rem', borderRadius: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', marginBottom: '1rem' }}>
+                <strong style={{ fontSize: '1rem' }}>Comment l'application aide-t-elle le bureau exécutif ?</strong>
+                <span className="material-symbols-rounded">expand_more</span>
+              </div>
+              <p style={{ color: '#52525b', fontSize: '0.95rem', margin: 0, lineHeight: 1.5 }}>
+                Elle automatise la comptabilité, le suivi des cotisations et la génération des rapports, réduisant considérablement la charge de travail manuel et les erreurs.
+              </p>
             </div>
-            <div style={{ background: '#ffffff', color: '#000000', border: '1px solid #e4e4e7', padding: '1.5rem', borderRadius: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-              <strong style={{ fontSize: '1rem' }}>Comment l'application aide-t-elle le bureau exécutif ?</strong>
-              <span className="material-symbols-rounded">expand_more</span>
+
+            <div style={{ background: '#ffffff', color: '#000000', border: '1px solid #e4e4e7', padding: '1.5rem', borderRadius: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', marginBottom: '1rem' }}>
+                <strong style={{ fontSize: '1rem' }}>Les membres peuvent-ils payer via Mobile Money ?</strong>
+                <span className="material-symbols-rounded">expand_more</span>
+              </div>
+              <p style={{ color: '#52525b', fontSize: '0.95rem', margin: 0, lineHeight: 1.5 }}>
+                Absolument. Nous intégrons nativement des moyens de paiement locaux sécurisés pour simplifier toutes vos transactions.
+              </p>
             </div>
-            <div style={{ background: '#ffffff', color: '#000000', border: '1px solid #e4e4e7', padding: '1.5rem', borderRadius: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-              <strong style={{ fontSize: '1rem' }}>Les membres peuvent-ils payer via Mobile Money ?</strong>
-              <span className="material-symbols-rounded">expand_more</span>
-            </div>
-            <div style={{ background: '#ffffff', color: '#000000', border: '1px solid #e4e4e7', padding: '1.5rem', borderRadius: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-              <strong style={{ fontSize: '1rem' }}>Fournissez-vous des rapports certifiés ?</strong>
-              <span className="material-symbols-rounded">expand_more</span>
+
+            <div style={{ background: '#ffffff', color: '#000000', border: '1px solid #e4e4e7', padding: '1.5rem', borderRadius: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', marginBottom: '1rem' }}>
+                <strong style={{ fontSize: '1rem' }}>Fournissez-vous des rapports certifiés ?</strong>
+                <span className="material-symbols-rounded">expand_more</span>
+              </div>
+              <p style={{ color: '#52525b', fontSize: '0.95rem', margin: 0, lineHeight: 1.5 }}>
+                Oui, la plateforme génère automatiquement des rapports financiers exportables avec des pistes d'audit claires pour garantir la transparence totale.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 5. CTA Section */}
-      <section style={{ padding: '5rem 1.25rem', background: '#000000', color: '#ffffff', textAlign: 'center' }}>
-        <div style={{ maxWidth: 800, margin: '0 auto', padding: '4rem 2rem', background: 'rgba(255,255,255,0.05)', borderRadius: 32, border: '1px solid rgba(255,255,255,0.1)' }}>
-          <h2 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '2rem', letterSpacing: '-0.02em' }}>
-            Transformez la gestion de votre association dès aujourd'hui
-          </h2>
-          <div style={{ display: 'flex', maxWidth: 450, margin: '0 auto', background: '#ffffff', padding: '0.4rem', borderRadius: 999 }}>
-            <input type="email" placeholder="Entrez votre adresse email" style={{ flex: 1, border: 'none', background: 'transparent', padding: '0 1rem', fontSize: '0.95rem', color: '#000', outline: 'none' }} />
-            <button style={{ background: '#000000', color: '#ffffff', border: 'none', padding: '0.85rem 1.5rem', borderRadius: 999, fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}>
-              Démarrer
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* 6. Footer (Simplified) */}
-      <footer style={{ background: '#ffffff', color: '#52525b', padding: '3rem 1.25rem', borderTop: '1px solid #e4e4e7' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#000000', fontWeight: 900, fontSize: '1.25rem' }}>
-            <span className="material-symbols-rounded">diversity_3</span>
-            Assos 2.0
-          </div>
-          <div style={{ fontSize: '0.9rem' }}>
-            &copy; 2026 Assos 2.0. Tous droits réservés.
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

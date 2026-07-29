@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Footer from '../components/Footer';
 
 export default function LandingPage() {
   const [isAnnual, setIsAnnual] = useState(false);
@@ -998,41 +999,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 8. Call-To-Action Banner */}
-      <section style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', color: '#ffffff', padding: '5rem 1.25rem', textAlign: 'center' }}>
-        <div style={{ maxWidth: 800, margin: '0 auto', position: 'relative', zIndex: 10 }}>
-          <h2 style={{ fontSize: '2.25rem', fontWeight: 900, marginBottom: '1.25rem', letterSpacing: '-0.02em' }}>Prêt à moderniser votre association ?</h2>
-          <p style={{ color: '#94a3b8', fontSize: '1.1rem', marginBottom: '2.25rem', lineHeight: 1.6 }}>
-            Rejoignez plus de 150 associations qui font confiance à Assos 2.0 pour piloter leurs tontines et Mutuelles en Afrique.
-          </p>
-          <Link href="/register" style={{ background: '#ffffff', color: '#0f172a', textDecoration: 'none', padding: '0.95rem 2rem', borderRadius: 16, fontWeight: 800, fontSize: '0.98rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 10px 25px rgba(255,255,255,0.1)' }}>
-            <span className="material-symbols-rounded">diversity_3</span>
-            Créer mon association gratuitement
-          </Link>
-        </div>
-      </section>
-
-      {/* 9. Footer */}
-      <footer style={{ background: '#0f172a', color: '#94a3b8', padding: '3.5rem 1.25rem', borderTop: '1px solid #1e293b' }}>
-        <div style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem' }}>
-          
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ffffff', fontWeight: 900, fontSize: '1.15rem' }}>
-            <span className="material-symbols-rounded" style={{ color: '#6366f1' }}>diversity_3</span>
-            <span>Assos 2.0</span>
-          </div>
-
-          <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.88rem' }}>
-            <Link href="/privacy" style={{ color: '#94a3b8', textDecoration: 'none' }}>Confidentialité</Link>
-            <Link href="/terms" style={{ color: '#94a3b8', textDecoration: 'none' }}>Conditions d'utilisation</Link>
-          </div>
-
-          <div style={{ fontSize: '0.88rem' }}>
-            © {new Date().getFullYear()} Assos 2.0. Tous droits réservés.
-          </div>
-
-        </div>
-      </footer>
-
+      <Footer />
     </div>
   );
 }
