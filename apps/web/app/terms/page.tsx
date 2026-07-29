@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Footer from '../../components/Footer';
 
 export const metadata: Metadata = {
   title: "Conditions d'utilisation",
@@ -10,127 +11,125 @@ export default function TermsPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
-      color: '#e2e8f0',
+      background: '#ffffff',
+      color: '#0f172a',
       fontFamily: "'Outfit', 'Inter', sans-serif",
     }}>
       {/* Header */}
       <header style={{
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        borderBottom: '1px solid #e2e8f0',
         padding: '1.25rem 2rem',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
+        background: '#ffffff'
       }}>
         <Link href="/" style={{
           display: 'flex',
           alignItems: 'center',
           gap: '0.5rem',
           textDecoration: 'none',
-          color: '#f8fafc',
-          fontWeight: 700,
-          fontSize: '1.2rem',
+          color: '#000000',
+          fontWeight: 900,
+          fontSize: '1.25rem',
         }}>
-          <span style={{
-            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-            borderRadius: '8px',
-            padding: '4px 10px',
-            fontSize: '1rem',
-          }}>A</span>
+          <span className="material-symbols-rounded" style={{ color: '#000000' }}>diversity_3</span>
           Assos 2.0
         </Link>
         <Link href="/login" style={{
-          color: '#a5b4fc',
+          color: '#000000',
           textDecoration: 'none',
-          fontSize: '0.9rem',
+          fontWeight: 600,
+          fontSize: '0.95rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.3rem'
         }}>
-          Se connecter →
+          Se connecter <span className="material-symbols-rounded" style={{ fontSize: '1.1rem' }}>arrow_forward</span>
         </Link>
       </header>
 
       {/* Content */}
-      <main style={{ maxWidth: '800px', margin: '0 auto', padding: '3rem 2rem' }}>
+      <main style={{ maxWidth: '800px', margin: '0 auto', padding: '4rem 1.25rem 6rem' }}>
         <h1 style={{
           fontSize: '2.5rem',
-          fontWeight: 700,
+          fontWeight: 900,
           marginBottom: '0.5rem',
-          background: 'linear-gradient(135deg, #a5b4fc, #818cf8)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
+          color: '#000000',
+          letterSpacing: '-0.02em'
         }}>
-          {"Conditions d'utilisation"}
+          Conditions Générales d'Utilisation
         </h1>
-        <p style={{ color: '#94a3b8', marginBottom: '2.5rem', fontSize: '0.9rem' }}>
-          Dernière mise à jour : juillet 2025
+        <p style={{ color: '#64748b', marginBottom: '3rem', fontSize: '1rem', fontWeight: 500 }}>
+          Dernière mise à jour : Juillet 2026
         </p>
 
-        {[
-          {
-            title: '1. Acceptation des conditions',
-            content: `En utilisant la plateforme Assos 2.0, vous acceptez sans réserve les présentes conditions générales d'utilisation. Si vous n'acceptez pas ces conditions, vous ne devez pas utiliser le service.`,
-          },
-          {
-            title: '2. Description du service',
-            content: `Assos 2.0 est une plateforme SaaS de gestion associative dédiée aux associations, tontines et mutuelles, principalement en Afrique subsaharienne. Le service permet la gestion des membres, des cotisations, des cycles de tontine, des prêts et des sanctions.`,
-          },
-          {
-            title: '3. Inscription et compte',
-            content: `Pour accéder au service, vous devez créer un compte avec des informations exactes et à jour. Vous êtes responsable de la confidentialité de vos identifiants et de toute activité effectuée via votre compte. Vous devez nous notifier immédiatement de toute utilisation non autorisée.`,
-          },
-          {
-            title: '4. Rôles et responsabilités',
-            content: `La plateforme distingue plusieurs rôles : Président, Trésorier et Membre. Le Président et le Trésorier disposent de droits d'administration étendus sur leur association. Chaque utilisateur est responsable des actions effectuées dans le cadre de son rôle.`,
-          },
-          {
-            title: '5. Données financières',
-            content: `Assos 2.0 facilite la gestion des flux financiers associatifs (cotisations, prêts, tontines). Nous ne sommes pas un établissement de crédit ni un prestataire de services de paiement. Les utilisateurs sont seuls responsables des transactions financières réelles effectuées hors de la plateforme.`,
-          },
-          {
-            title: '6. Utilisation acceptable',
-            content: `Il est interdit d'utiliser la plateforme à des fins illégales, frauduleuses, ou contraires aux lois en vigueur dans votre pays. Toute tentative de contournement des mesures de sécurité, d'accès non autorisé aux données d'autres utilisateurs, ou d'utilisation abusive du service entraîne la résiliation immédiate du compte.`,
-          },
-          {
-            title: '7. Propriété intellectuelle',
-            content: `Tous les droits de propriété intellectuelle relatifs à la plateforme Assos 2.0 (code, design, marques) appartiennent à leurs propriétaires respectifs. Les utilisateurs conservent la propriété de leurs données.`,
-          },
-          {
-            title: '8. Limitation de responsabilité',
-            content: `Le service est fourni "tel quel". Nous ne garantissons pas une disponibilité continue sans interruption. Notre responsabilité est limitée aux dommages directs et ne peut excéder le montant des abonnements payés au cours des 12 derniers mois.`,
-          },
-          {
-            title: '9. Résiliation',
-            content: `Vous pouvez résilier votre compte à tout moment. Nous nous réservons le droit de suspendre ou résilier tout compte en cas de violation des présentes conditions, sans préavis.`,
-          },
-          {
-            title: '10. Droit applicable',
-            content: `Les présentes conditions sont régies par le droit camerounais. Tout litige sera soumis aux tribunaux compétents de Yaoundé, Cameroun.`,
-          },
-        ].map((section) => (
-          <section key={section.title} style={{
-            marginBottom: '2rem',
-            padding: '1.5rem',
-            background: 'rgba(255,255,255,0.04)',
-            borderRadius: '12px',
-            border: '1px solid rgba(255,255,255,0.07)',
-          }}>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.75rem', color: '#c7d2fe' }}>
-              {section.title}
-            </h2>
-            <p style={{ color: '#94a3b8', lineHeight: 1.7, fontSize: '0.95rem' }}>
-              {section.content}
-            </p>
-          </section>
-        ))}
+        <div style={{ lineHeight: 1.7, color: '#334155', fontSize: '1.05rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <p>
+            Bienvenue sur Assos 2.0 ! En accédant et en utilisant notre plateforme, vous acceptez sans réserve les présentes conditions générales d'utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser le service.
+          </p>
 
-        <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', gap: '1rem' }}>
-          <Link href="/privacy" style={{ color: '#a5b4fc', textDecoration: 'none', fontSize: '0.9rem' }}>
-            Politique de confidentialité
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#000000', marginTop: '1rem' }}>1. Description du service</h2>
+          <p>
+            Assos 2.0 est une plateforme logicielle SaaS (Software as a Service) dédiée à la gestion numérique des associations, des tontines, et des mutuelles, principalement axée sur les usages en Afrique (notamment au Cameroun). La plateforme permet de :
+          </p>
+          <ul style={{ paddingLeft: '1.5rem' }}>
+            <li>Gérer les membres et les cotisations</li>
+            <li>Suivre les cycles de tontine (y compris les enchères)</li>
+            <li>Gérer les prêts (mutuelle) et les remboursements</li>
+            <li>Appliquer et suivre les sanctions financières</li>
+          </ul>
+
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#000000', marginTop: '1rem' }}>2. Inscription et sécurité du compte</h2>
+          <p>
+            Pour accéder à certaines fonctionnalités, vous devez créer un compte utilisateur. Vous êtes tenu de :
+          </p>
+          <ul style={{ paddingLeft: '1.5rem' }}>
+            <li>Fournir des informations exactes et complètes.</li>
+            <li>Maintenir la confidentialité de vos identifiants (mot de passe).</li>
+            <li>Être entièrement responsable de toute activité sous votre compte.</li>
+          </ul>
+          <p>
+            Nous nous réservons le droit de suspendre ou de supprimer tout compte fournissant des informations frauduleuses ou enfreignant ces conditions.
+          </p>
+
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#000000', marginTop: '1rem' }}>3. Responsabilités financières et limites</h2>
+          <p>
+            <strong>Important :</strong> Assos 2.0 est un <em>outil de gestion administrative et comptable</em>. Nous ne sommes <strong>pas</strong> une institution financière, une banque, ou un intermédiaire de crédit.
+          </p>
+          <ul style={{ paddingLeft: '1.5rem' }}>
+            <li>Les utilisateurs (Présidents, Trésoriers, Membres) sont seuls responsables des flux financiers réels.</li>
+            <li>Assos 2.0 ne garantit pas le paiement des cotisations par les membres ni le remboursement des prêts.</li>
+            <li>La plateforme intègre des méthodes de paiement (ex. Mobile Money), qui sont fournies par des opérateurs tiers. Nous déclinons toute responsabilité en cas de panne de ces réseaux externes.</li>
+          </ul>
+
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#000000', marginTop: '1rem' }}>4. Propriété intellectuelle</h2>
+          <p>
+            Tous les éléments composant la plateforme Assos 2.0 (logos, textes, code source, design) sont notre propriété exclusive. Il est strictement interdit de copier, modifier, ou distribuer ces éléments sans notre autorisation écrite préalable. Vous conservez toutefois l'entière propriété des données de votre association que vous importez sur la plateforme.
+          </p>
+
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#000000', marginTop: '1rem' }}>5. Résiliation</h2>
+          <p>
+            Vous êtes libre de résilier votre compte à tout moment en nous contactant. Assos 2.0 se réserve le droit de suspendre ou clôturer l'accès à la plateforme en cas de non-paiement de l'abonnement (pour les plans payants) ou en cas d'utilisation abusive (spam, fraude, violation de la loi).
+          </p>
+
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#000000', marginTop: '1rem' }}>6. Contact</h2>
+          <p>
+            Pour toute question concernant ces Conditions d'Utilisation, vous pouvez nous contacter à : <strong>gerazayisti@gmail.com</strong>.
+          </p>
+        </div>
+
+        <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '1.5rem' }}>
+          <Link href="/privacy" style={{ color: '#000000', textDecoration: 'underline', fontWeight: 600, fontSize: '1rem' }}>
+            Consulter la Politique de confidentialité
           </Link>
-          <Link href="/" style={{ color: '#64748b', textDecoration: 'none', fontSize: '0.9rem' }}>
-            ← Retour à l'accueil
+          <Link href="/contact" style={{ color: '#64748b', textDecoration: 'none', fontWeight: 500, fontSize: '1rem' }}>
+            Nous contacter
           </Link>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }
