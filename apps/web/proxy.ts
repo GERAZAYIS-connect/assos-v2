@@ -17,6 +17,7 @@ export function proxy(request: NextRequest) {
     url.pathname.startsWith('/privacy') ||
     url.pathname.startsWith('/terms') ||
     url.pathname.startsWith('/about') ||
+    url.pathname.startsWith('/contact') ||
     url.pathname.includes('.');
 
   if (isPublicRoute) {

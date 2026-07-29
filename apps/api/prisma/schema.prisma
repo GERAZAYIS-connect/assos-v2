@@ -1006,7 +1006,20 @@ model EquipmentRental {
   @@map("equipment_rentals")
 }
 
+// =============================================================================
+// PLATFORM / PUBLIC
+// =============================================================================
 
+model ContactMessage {
+  id        String   @id @default(cuid())
+  firstName String
+  lastName  String
+  email     String
+  phone     String
+  subject   String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
 
-
-
+  @@map("contact_messages")
+}

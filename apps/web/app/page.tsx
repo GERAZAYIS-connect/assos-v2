@@ -145,6 +145,7 @@ export default function LandingPage() {
             <Link href="#technologie" style={{ color: '#cbd5e1', textDecoration: 'none' }}>Technologie</Link>
             <Link href="#fonctionnement" style={{ color: '#cbd5e1', textDecoration: 'none' }}>Fonctionnement</Link>
             <Link href="#tarifs" style={{ color: '#cbd5e1', textDecoration: 'none' }}>Tarifs</Link>
+            <Link href="/contact" style={{ color: '#cbd5e1', textDecoration: 'none' }}>Contact</Link>
           </nav>
 
           {/* Desktop Right Action & Mobile Burger Button */}
@@ -227,6 +228,9 @@ export default function LandingPage() {
             </Link>
             <Link href="#tarifs" onClick={() => setMobileMenuOpen(false)} style={{ color: '#f8fafc', textDecoration: 'none', fontSize: '1.05rem', fontWeight: 600 }}>
               Tarifs
+            </Link>
+            <Link href="/contact" onClick={() => setMobileMenuOpen(false)} style={{ color: '#f8fafc', textDecoration: 'none', fontSize: '1.05rem', fontWeight: 600 }}>
+              Contact
             </Link>
             <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.1)', margin: '0.5rem 0' }} />
             <Link href="/register" onClick={() => setMobileMenuOpen(false)} style={{

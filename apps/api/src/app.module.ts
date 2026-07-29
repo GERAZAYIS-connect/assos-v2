@@ -18,6 +18,7 @@ import { GovernanceModule } from './modules/governance/governance.module';
 import { BudgetModule } from './modules/budget/budget.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { EquipmentModule } from './modules/equipment/equipment.module';
+import { ContactModule } from './modules/contact/contact.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { EquipmentModule } from './modules/equipment/equipment.module';
     BudgetModule,
     NotificationsModule,
     EquipmentModule,
+    ContactModule,
   ],
   providers: [
     {
