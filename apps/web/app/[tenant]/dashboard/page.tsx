@@ -10,8 +10,6 @@ export default function TenantDashboardPage() {
   const tenantSlug = (params?.tenant as string) || '';
 
   const [loading, setLoading] = useState(true);
-  const [metrics, setMetrics] = useState<{
-    membersCount: number;
   const [metrics, setMetrics] = useState({
     membersCount: 0,
     totalTreasuryBalance: 0,
@@ -279,10 +277,10 @@ export default function TenantDashboardPage() {
                   <span className="material-symbols-rounded" style={{ color: '#000000' }}>history</span>
                   Opérations de Trésorerie & Activités
                 </h2>
-                <div style={{ display: 'flex', gap: '0.5rem', background: '#f1f5f9', padding: '0.25rem', borderRadius: 999 }}>
-                  <button type="button" onClick={() => setActivityFilter('ALL')} style={{ border: 'none', background: activityFilter === 'ALL' ? '#ffffff' : 'transparent', color: activityFilter === 'ALL' ? '#0f172a' : '#64748b', padding: '0.4rem 1rem', borderRadius: 999, fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', boxShadow: activityFilter === 'ALL' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none' }}>Toutes</button>
-                  <button type="button" onClick={() => setActivityFilter('DEPOSIT')} style={{ border: 'none', background: activityFilter === 'DEPOSIT' ? '#ffffff' : 'transparent', color: activityFilter === 'DEPOSIT' ? '#10b981' : '#64748b', padding: '0.4rem 1rem', borderRadius: 999, fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', boxShadow: activityFilter === 'DEPOSIT' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none' }}>Encaissements</button>
-                  <button type="button" onClick={() => setActivityFilter('WITHDRAWAL')} style={{ border: 'none', background: activityFilter === 'WITHDRAWAL' ? '#ffffff' : 'transparent', color: activityFilter === 'WITHDRAWAL' ? '#dc2626' : '#64748b', padding: '0.4rem 1rem', borderRadius: 999, fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', boxShadow: activityFilter === 'WITHDRAWAL' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none' }}>Décaissements</button>
+                <div style={{ display: 'flex', gap: '0.5rem', background: '#f1f5f9', padding: '0.25rem', borderRadius: 999, overflowX: 'auto', whiteSpace: 'nowrap', maxWidth: '100%', scrollbarWidth: 'none' }}>
+                  <button type="button" onClick={() => setActivityFilter('ALL')} style={{ border: 'none', background: activityFilter === 'ALL' ? '#ffffff' : 'transparent', color: activityFilter === 'ALL' ? '#0f172a' : '#64748b', padding: '0.4rem 1rem', borderRadius: 999, fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', boxShadow: activityFilter === 'ALL' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', flexShrink: 0 }}>Toutes</button>
+                  <button type="button" onClick={() => setActivityFilter('DEPOSIT')} style={{ border: 'none', background: activityFilter === 'DEPOSIT' ? '#ffffff' : 'transparent', color: activityFilter === 'DEPOSIT' ? '#10b981' : '#64748b', padding: '0.4rem 1rem', borderRadius: 999, fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', boxShadow: activityFilter === 'DEPOSIT' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', flexShrink: 0 }}>Encaissements</button>
+                  <button type="button" onClick={() => setActivityFilter('WITHDRAWAL')} style={{ border: 'none', background: activityFilter === 'WITHDRAWAL' ? '#ffffff' : 'transparent', color: activityFilter === 'WITHDRAWAL' ? '#dc2626' : '#64748b', padding: '0.4rem 1rem', borderRadius: 999, fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', boxShadow: activityFilter === 'WITHDRAWAL' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', flexShrink: 0 }}>Décaissements</button>
                 </div>
               </div>
 
@@ -366,38 +364,34 @@ export default function TenantDashboardPage() {
                 Accédez directement aux 11 modules de votre espace.
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                {quickActions.map((action) => (
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {quickActions.map((action, index) => (
                   <Link
                     key={action.label}
                     href={action.href}
                     style={{
-                      background: '#f8fafc',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: 10,
-                      padding: '0.75rem 1rem',
+                      background: 'transparent',
+                      borderBottom: index === quickActions.length - 1 ? 'none' : '1px solid #e2e8f0',
+                      padding: '1rem 0',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '0.75rem',
+                      gap: '0.85rem',
                       textDecoration: 'none',
                       color: '#0f172a',
                       fontWeight: 600,
-                      fontSize: '0.88rem',
-                      transition: 'all 0.2s ease',
+                      fontSize: '0.95rem',
+                      transition: 'color 0.2s ease',
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = '#000000';
-                      e.currentTarget.style.color = '#ffffff';
-                      e.currentTarget.style.borderColor = '#000000';
+                      e.currentTarget.style.color = '#10b981';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.background = '#f8fafc';
                       e.currentTarget.style.color = '#0f172a';
-                      e.currentTarget.style.borderColor = '#e2e8f0';
                     }}
                   >
-                    <span className="material-symbols-rounded" style={{ fontSize: '1.25rem' }}>{action.icon}</span>
-                    <span>{action.label}</span>
+                    <span className="material-symbols-rounded" style={{ fontSize: '1.25rem', color: '#64748b' }}>{action.icon}</span>
+                    <span style={{ flex: 1 }}>{action.label}</span>
+                    <span className="material-symbols-rounded" style={{ fontSize: '1rem', color: '#cbd5e1' }}>chevron_right</span>
                   </Link>
                 ))}
               </div>
