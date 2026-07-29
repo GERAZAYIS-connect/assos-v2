@@ -39,10 +39,23 @@ export default function MembersPage() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const ITEMS_PER_PAGE = 10;
 
+  // View and Pagination states
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const ITEMS_PER_PAGE = 10;
+
   // Modal states
   const [showInviteModal, setShowInviteModal] = useState<boolean>(false);
+  const [inviteMode, setInviteMode] = useState<'link' | 'manual'>('link');
   const [inviteEmail, setInviteEmail] = useState<string>('');
   const [inviteRole, setInviteRole] = useState<string>('MEMBER');
+  
+  // Manual Add states
+  const [manualFirstName, setManualFirstName] = useState<string>('');
+  const [manualLastName, setManualLastName] = useState<string>('');
+  const [manualPhone, setManualPhone] = useState<string>('');
+  const [manualResult, setManualResult] = useState<{ emailOrPhone: string; password?: string } | null>(null);
+
   const [inviteLoading, setInviteLoading] = useState<boolean>(false);
   const [createdInviteUrl, setCreatedInviteUrl] = useState<string>('');
   const [inviteError, setInviteError] = useState<string>('');
@@ -88,29 +101,19 @@ export default function MembersPage() {
     setInviteError('');
     setShowInviteModal(true);
   };
-
   const closeInviteModal = () => {
     setShowInviteModal(false);
+    setInviteEmail('');
     setCreatedInviteUrl('');
     setInviteError('');
+    setManualFirstName('');
+    setManualLastName('');
+    setManualPhone('');
+    setManualResult(null);
   };
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
-    setInviteLoading(true);
-    setInviteError('');
-
-    try {
-      const res = await fetch(`/api/backend/associations/${tenantSlug}/members/invite`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: inviteEmail || undefined, role: inviteRole }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok && data.inviteUrl) {
-        setCreatedInviteUrl(data.inviteUrl);
       } else {
         setInviteError(data.message || 'Échec de la création du lien d’invitation.');
       }
@@ -501,14 +504,45 @@ export default function MembersPage() {
         </>
       )}
 
-      {/* Invite Modal */}
+      {/* Invite / Add Modal */}
       {showInviteModal && (
         <div className={styles.modalOverlay} onClick={(e) => {
           if (e.target === e.currentTarget) closeInviteModal();
         }}>
           <div className={styles.modal}>
-            <h2>Inviter un nouveau membre</h2>
-            <p>Générez un lien d'invitation réel à transmettre par WhatsApp, SMS ou Email.</p>
+            <h2>{inviteMode === 'link' ? 'Inviter un membre' : 'Ajouter manuellement'}</h2>
+            <p style={{ marginBottom: '1rem', color: '#666', fontSize: '0.9rem' }}>
+              {inviteMode === 'link' 
+                ? "Générez un lien d'invitation à transmettre." 
+                : "Créez le compte pour le membre et transmettez-lui ses accès."}
+            </p>
+
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+              <button
+                type="button"
+                onClick={() => setInviteMode('link')}
+                style={{
+                  flex: 1, padding: '0.5rem', border: '1px solid #ccc',
+                  background: inviteMode === 'link' ? '#000' : '#f9f9f9',
+                  color: inviteMode === 'link' ? '#fff' : '#333',
+                  borderRadius: '0.4rem', cursor: 'pointer', fontWeight: 600
+                }}
+              >
+                Par Lien
+              </button>
+              <button
+                type="button"
+                onClick={() => setInviteMode('manual')}
+                style={{
+                  flex: 1, padding: '0.5rem', border: '1px solid #ccc',
+                  background: inviteMode === 'manual' ? '#000' : '#f9f9f9',
+                  color: inviteMode === 'manual' ? '#fff' : '#333',
+                  borderRadius: '0.4rem', cursor: 'pointer', fontWeight: 600
+                }}
+              >
+                Manuellement
+              </button>
+            </div>
 
             {inviteError && (
               <div className={styles.errorAlert}>
@@ -517,10 +551,35 @@ export default function MembersPage() {
               </div>
             )}
 
-            {!createdInviteUrl ? (
+            {!createdInviteUrl && !manualResult ? (
               <form onSubmit={handleInvite}>
+                {inviteMode === 'manual' && (
+                  <>
+                    <div className={styles.field}>
+                      <label>Prénom *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Prénom"
+                        value={manualFirstName}
+                        onChange={(e) => setManualFirstName(e.target.value)}
+                      />
+                    </div>
+                    <div className={styles.field}>
+                      <label>Nom *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Nom de famille"
+                        value={manualLastName}
+                        onChange={(e) => setManualLastName(e.target.value)}
+                      />
+                    </div>
+                  </>
+                )}
+
                 <div className={styles.field}>
-                  <label>Email du membre (optionnel)</label>
+                  <label>{inviteMode === 'link' ? 'Email (optionnel)' : 'Email'}</label>
                   <input
                     type="email"
                     placeholder="membre@exemple.cm"
@@ -528,6 +587,18 @@ export default function MembersPage() {
                     onChange={(e) => setInviteEmail(e.target.value)}
                   />
                 </div>
+
+                {inviteMode === 'manual' && (
+                  <div className={styles.field}>
+                    <label>Téléphone (si pas d'email)</label>
+                    <input
+                      type="text"
+                      placeholder="+237..."
+                      value={manualPhone}
+                      onChange={(e) => setManualPhone(e.target.value)}
+                    />
+                  </div>
+                )}
 
                 <div className={styles.field}>
                   <label>Rôle attribué</label>
@@ -544,11 +615,11 @@ export default function MembersPage() {
                     Annuler
                   </button>
                   <button type="submit" className={styles.submitBtn} disabled={inviteLoading}>
-                    {inviteLoading ? 'Génération...' : 'Générer le lien'}
+                    {inviteLoading ? 'Génération...' : (inviteMode === 'link' ? 'Générer le lien' : 'Créer le membre')}
                   </button>
                 </div>
               </form>
-            ) : (
+            ) : createdInviteUrl ? (
               <div className={styles.inviteResult}>
                 <label>Lien d'invitation généré (valide 7 jours) :</label>
                 <div className={styles.urlCopyGroup}>
@@ -569,6 +640,30 @@ export default function MembersPage() {
                 <div className={styles.modalActions} style={{ marginTop: '1.5rem' }}>
                   <button type="button" className={styles.submitBtn} onClick={closeInviteModal}>
                     Fermer
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className={styles.inviteResult}>
+                <div style={{ padding: '1rem', background: '#ecfdf5', border: '1px solid #10b981', borderRadius: '0.5rem', marginBottom: '1rem' }}>
+                  <h3 style={{ color: '#047857', marginTop: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span className="material-symbols-rounded">check_circle</span>
+                    Membre ajouté avec succès !
+                  </h3>
+                  <p style={{ margin: '0.5rem 0', color: '#065f46' }}>Transmettez ces accès au membre :</p>
+                  <div style={{ background: '#fff', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid #a7f3d0', fontFamily: 'monospace', fontSize: '0.95rem' }}>
+                    <strong>Identifiant :</strong> {manualResult?.emailOrPhone}<br/>
+                    {manualResult?.password ? (
+                      <><strong>Mot de passe :</strong> {manualResult.password}</>
+                    ) : (
+                      <span style={{ color: '#666' }}>Le compte existait déjà, le membre peut utiliser son mot de passe actuel.</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className={styles.modalActions} style={{ marginTop: '1.5rem' }}>
+                  <button type="button" className={styles.submitBtn} onClick={closeInviteModal}>
+                    Terminer
                   </button>
                 </div>
               </div>
