@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from './settings.module.css';
@@ -43,6 +43,7 @@ export default function SettingsPage() {
   const [joiningFee, setJoiningFee] = useState<number>(0);
   const [plan, setPlan] = useState<'DISCOVERY' | 'ESSENTIAL' | 'PRO' | 'ENTERPRISE'>('DISCOVERY');
   const [logoUrl, setLogoUrl] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Tabs
   const [activeTab, setActiveTab] = useState<'GENERAL' | 'FINANCE' | 'SUBSCRIPTION'>('GENERAL');
@@ -133,6 +134,24 @@ export default function SettingsPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Check file size (e.g. max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Le fichier est trop volumineux (max 5 Mo).");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64String = event.target?.result as string;
+      setLogoUrl(base64String);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleExport = async () => {
@@ -292,16 +311,42 @@ export default function SettingsPage() {
                 )}
               </div>
               <div style={{ flex: 1 }}>
-                <label style={{ fontWeight: 600, fontSize: '0.88rem', color: '#334155', display: 'block', marginBottom: '0.35rem' }}>Lien vers le logo (URL de l'image)</label>
+                <label style={{ fontWeight: 600, fontSize: '0.88rem', color: '#334155', display: 'block', marginBottom: '0.5rem' }}>
+                  Logo de l'Association
+                </label>
+                
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                  <button 
+                    type="button"
+                    disabled={!isPresident}
+                    onClick={() => fileInputRef.current?.click()}
+                    style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '0.6rem 1rem', borderRadius: 8, fontWeight: 600, cursor: isPresident ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}
+                  >
+                    <span className="material-symbols-rounded" style={{ fontSize: '1.2rem' }}>upload</span>
+                    Uploader une image
+                  </button>
+                  {logoUrl && isPresident && (
+                    <button
+                      type="button"
+                      onClick={() => setLogoUrl('')}
+                      style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fca5a5', padding: '0.6rem 1rem', borderRadius: 8, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}
+                    >
+                      <span className="material-symbols-rounded" style={{ fontSize: '1.2rem' }}>delete</span>
+                      Supprimer
+                    </button>
+                  )}
+                </div>
                 <input
-                  type="url"
-                  className={styles.input}
-                  value={logoUrl}
-                  disabled={!isPresident}
-                  onChange={(e) => setLogoUrl(e.target.value)}
-                  placeholder="Ex: https://monsite.com/logo.png"
-                  style={{ width: '100%' }}
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/png, image/jpeg, image/webp"
+                  style={{ display: 'none' }}
+                  onChange={handleLogoUpload}
                 />
+                
+                <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.75rem', marginBottom: 0 }}>
+                  Formats acceptés : PNG, JPG, WEBP. Taille max : 5 Mo.
+                </p>
               </div>
             </div>
 
