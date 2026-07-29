@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   keywords: ['association', 'tontine', 'mutuelle', 'njangi', 'Afrique', 'Cameroun'],
 };
 
+import GlobalFetchInterceptor from './GlobalFetchInterceptor';
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" data-scroll-behavior="smooth" suppressHydrationWarning>
@@ -28,7 +30,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <GlobalFetchInterceptor>
+          {children}
+        </GlobalFetchInterceptor>
+      </body>
     </html>
   );
 }
