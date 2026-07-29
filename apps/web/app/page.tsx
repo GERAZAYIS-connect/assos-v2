@@ -852,17 +852,23 @@ export default function LandingPage() {
       </section>
 
       {/* 6. Local Integrations Map */}
-      <section style={{ position: 'relative', overflow: 'hidden', padding: '5rem 1.25rem', background: '#0f172a', color: '#ffffff' }}>
+      <section style={{ 
+        position: 'relative', 
+        overflow: 'hidden', 
+        padding: '8rem 1.25rem', 
+        background: 'linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.7)), url("/galerie/integrations_simple.png") no-repeat center center/cover, #0f172a', 
+        color: '#ffffff',
+        minHeight: 500,
+        display: 'flex',
+        alignItems: 'center'
+      }}>
         <div style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 10 }}>
-          <h2 style={{ fontSize: '2.25rem', fontWeight: 900, color: '#ffffff', marginBottom: '1.25rem' }}>
+          <h2 style={{ fontSize: '2.25rem', fontWeight: 900, color: '#ffffff', marginBottom: '1.25rem', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
             Libérez la puissance avec nos intégrations locales
           </h2>
-          <p style={{ color: '#94a3b8', fontSize: '1.05rem', maxWidth: 680, margin: '0 auto 3.5rem auto', lineHeight: 1.6 }}>
+          <p style={{ color: '#cbd5e1', fontSize: '1.05rem', maxWidth: 680, margin: '0 auto', lineHeight: 1.6, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
             Assos 2.0 se connecte directement aux principaux réseaux de télécommunications du continent pour automatiser vos flux financiers.
           </p>
-
-          <div style={{ width: 'full', margin: '0 auto', position: 'relative', minHeight: 400, background: 'url("/galerie/integrations_simple.png") no-repeat center center/contain' }}>
-          </div>
         </div>
       </section>
 
