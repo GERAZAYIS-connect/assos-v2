@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_FILTER } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { appConfig, validateConfig } from './config/app.config';
 import { PrismaModule } from './core/prisma/prisma.module';
 import { AuditModule } from './core/audit/audit.module';
 import { GlobalExceptionFilter } from './core/exceptions/global-exception.filter';
+import { SubscriptionGuard } from './common/guards/subscription.guard';
 import { AuthModule } from './modules/auth/auth.module';
 import { AssociationsModule } from './modules/associations/associations.module';
 import { MembersModule } from './modules/members/members.module';
@@ -27,6 +29,7 @@ import { ContactModule } from './modules/contact/contact.module';
       load: [appConfig],
       validate: validateConfig,
     }),
+    ScheduleModule.forRoot(),
     PrismaModule,
     AuditModule,
     AuthModule,
@@ -48,6 +51,10 @@ import { ContactModule } from './modules/contact/contact.module';
     {
       provide: APP_FILTER,
       useClass: GlobalExceptionFilter,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: SubscriptionGuard,
     },
   ],
 })

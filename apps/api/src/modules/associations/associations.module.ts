@@ -6,6 +6,7 @@ import { ExportAssociationDataUseCase } from './application/use-cases/export-ass
 import { PrismaAssociationRepository } from './infrastructure/repositories/prisma-association.repository';
 import { AssociationsController } from './interfaces/http/associations.controller';
 import { SuperAdminController } from './interfaces/http/super-admin.controller';
+import { SubscriptionCronService } from './application/services/subscription-cron.service';
 
 @Module({
   controllers: [AssociationsController, SuperAdminController],
@@ -13,6 +14,7 @@ import { SuperAdminController } from './interfaces/http/super-admin.controller';
     CreateAssociationUseCase,
     UpdateAssociationUseCase,
     ExportAssociationDataUseCase,
+    SubscriptionCronService,
     { provide: ASSOCIATION_REPOSITORY, useClass: PrismaAssociationRepository },
   ],
   exports: [ASSOCIATION_REPOSITORY],

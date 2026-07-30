@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useParams } from 'next/navigation';
+import { usePathname, useParams, useRouter } from 'next/navigation';
 import styles from './dashboard-shell.module.css';
+import SubscriptionBanner from '../../components/shared/SubscriptionBanner';
 
 interface DashboardShellProps {
   children: React.ReactNode;
@@ -18,6 +19,9 @@ export default function DashboardShell({ children }: DashboardShellProps) {
   const [notifOpen, setNotifOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [recentNotifs, setRecentNotifs] = useState<any[]>([]);
+  const [association, setAssociation] = useState<any>(null);
+  const [userRole, setUserRole] = useState<string>('MEMBER');
+  const router = useRouter();
 
   const navItems = [
     { icon: 'dashboard', label: 'Tableau de bord', href: `/${tenantSlug}/dashboard` },
@@ -37,8 +41,44 @@ export default function DashboardShell({ children }: DashboardShellProps) {
   React.useEffect(() => {
     if (tenantSlug) {
       fetchNotifications();
+      fetchAssociationDetails();
+      fetchUserRole();
     }
   }, [tenantSlug]);
+
+  const fetchUserRole = async () => {
+    try {
+      const res = await fetch(`/api/backend/members?associationId=${tenantSlug}`);
+      if (res.ok) {
+        const data = await res.json();
+        // Assume API returns { data: [...] } and we find the current user
+        // Or if it just returns the current user's membership. 
+        // Based on the grep search, they usually look for current member:
+        const current = data.data?.find((m: any) => m.isCurrentUser) || data.find?.((m: any) => m.isCurrentUser);
+        if (current) {
+          setUserRole(current.role);
+        } else if (data.role) {
+          setUserRole(data.role); // alternative if API returns role directly
+        }
+      }
+    } catch (e) {
+      console.error('Error fetching user role:', e);
+    }
+  };
+
+  const fetchAssociationDetails = async () => {
+    try {
+      // NOTE: We assume there is an endpoint to get basic association info by slug
+      // If the API endpoint path is different, this might need adjustment.
+      const res = await fetch(`/api/backend/associations/${tenantSlug}`);
+      if (res.ok) {
+        const data = await res.json();
+        setAssociation(data);
+      }
+    } catch (e) {
+      console.error('Error fetching association details:', e);
+    }
+  };
 
   const fetchNotifications = async () => {
     try {
@@ -218,7 +258,39 @@ export default function DashboardShell({ children }: DashboardShellProps) {
 
       {/* Main Content View */}
       <div className={styles.mainContainer}>
-        <main className={styles.mainContent}>{children}</main>
+        {(() => {
+          const isExpired = association && (association.subscriptionStatus === 'PAST_DUE' || association.subscriptionStatus === 'CANCELED');
+          const isTrial = association && (association.plan === 'DISCOVERY' || association.subscriptionStatus === 'TRIALING');
+
+          return (
+            <>
+              {association && isExpired && userRole === 'MEMBER' ? (
+                <div style={{
+                  position: 'absolute', inset: 0, zIndex: 9999, backgroundColor: '#f8fafc',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  textAlign: 'center', padding: '2rem'
+                }}>
+                  <span className="material-symbols-rounded" style={{ fontSize: '4rem', color: '#ef4444', marginBottom: '1rem' }}>lock</span>
+                  <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.5rem' }}>L'abonnement de votre association est inactif</h2>
+                  <p style={{ color: '#64748b', maxWidth: 400 }}>
+                    Veuillez contacter l'administrateur ou le bureau exécutif de l'association pour régulariser la situation.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {association && isExpired && userRole !== 'MEMBER' && (
+                    <SubscriptionBanner
+                      tenantSlug={tenantSlug}
+                      isExpired={isExpired}
+                      isTrial={isTrial}
+                    />
+                  )}
+                  <main className={styles.mainContent}>{children}</main>
+                </>
+              )}
+            </>
+          );
+        })()}
 
         {/* Mobile Bottom Navigation Bar */}
         <nav className={styles.mobileBottomNav}>

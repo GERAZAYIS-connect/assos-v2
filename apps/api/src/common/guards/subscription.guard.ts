@@ -2,7 +2,8 @@ import {
   Injectable,
   CanActivate,
   ExecutionContext,
-  ForbiddenException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
 
@@ -53,8 +54,9 @@ export class SubscriptionGuard implements CanActivate {
 
         // Les requêtes en lecture (GET) restent autorisées, mais la création/modification (POST, PUT, DELETE, PATCH) est bloquée
         if (request.method !== 'GET') {
-          throw new ForbiddenException(
+          throw new HttpException(
             `La période d'essai de 30 jours pour l'association "${association.name}" a expiré. Veuillez souscrire à un abonnement pour continuer à effectuer des opérations.`,
+            HttpStatus.PAYMENT_REQUIRED,
           );
         }
       }
@@ -64,8 +66,9 @@ export class SubscriptionGuard implements CanActivate {
     if (association.subscriptionStatus === 'PAST_DUE' || association.subscriptionStatus === 'CANCELED') {
       if (association.subscriptionEndsAt && now > new Date(association.subscriptionEndsAt)) {
         if (request.method !== 'GET') {
-          throw new ForbiddenException(
+          throw new HttpException(
             `L'abonnement de l'association "${association.name}" a expiré. Veuillez renouveler votre formule.`,
+            HttpStatus.PAYMENT_REQUIRED,
           );
         }
       }

@@ -20,6 +20,11 @@ export default function GlobalFetchInterceptor({ children }: { children: React.R
             router.push('/login');
           }
         }
+
+        // If the API returns 402 (Payment Required)
+        if (response.status === 402 && args[0]?.toString().includes('/api/backend/')) {
+          alert("Action refusée : Votre abonnement est inactif. Veuillez renouveler votre abonnement pour continuer.");
+        }
         
         // If the API returns 502/503/504 (Server restarting/down), we just pass the response back
         // The components will handle it gracefully (e.g. by showing a network error text instead of crashing)
