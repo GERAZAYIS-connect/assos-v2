@@ -16,6 +16,7 @@ import { LoansModule } from './modules/loans/loans.module';
 import { SanctionsModule } from './modules/sanctions/sanctions.module';
 import { TontinesModule } from './modules/tontines/tontines.module';
 import { MeetingsModule } from './modules/meetings/meetings.module';
+import { AdminModule } from './modules/admin/admin.module';
 import { GovernanceModule } from './modules/governance/governance.module';
 import { BudgetModule } from './modules/budget/budget.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
@@ -41,6 +42,7 @@ import { ContactModule } from './modules/contact/contact.module';
     SanctionsModule,
     TontinesModule,
     MeetingsModule,
+    AdminModule,
     GovernanceModule,
     BudgetModule,
     NotificationsModule,
