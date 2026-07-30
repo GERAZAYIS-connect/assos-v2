@@ -45,7 +45,7 @@ export interface IBudgetRepository {
   }>;
 
   calculateProfitDistribution(input: CreateProfitDistributionInput): Promise<any>;
-  executeProfitDistribution(associationId: string, year: number, adminUserId: string): Promise<any>;
+  executeProfitDistribution(input: CreateProfitDistributionInput, adminUserId: string): Promise<any>;
   getProfitDistribution(associationId: string, year: number): Promise<any | null>;
   listProfitDistributions(associationId: string): Promise<any[]>;
 }

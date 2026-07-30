@@ -50,11 +50,11 @@ interface HostedAssociation {
   subscriptionEndsAt: string | null;
   isActive: boolean;
   createdAt: string;
-  _count: {
-    members: number;
-    caisses: number;
-    tontines: number;
-    loans: number;
+  stats: {
+    membersCount: number;
+    caissesCount: number;
+    tontinesCount: number;
+    loansCount: number;
   };
 }
 
@@ -371,7 +371,7 @@ export default function SuperAdminPage() {
                         </div>
                         <div style={{ fontSize: '0.8rem', color: '#888', marginTop: '0.2rem' }}>{assoc.registrationRef || 'Réf. Inconnue'}</div>
                       </td>
-                      <td style={{ padding: '1rem 1.5rem', fontWeight: 500 }}>{assoc._count.members}</td>
+                      <td style={{ padding: '1rem 1.5rem', fontWeight: 500 }}>{assoc.stats.membersCount}</td>
                       <td style={{ padding: '1rem 1.5rem' }}>
                         <span style={{ padding: '0.3rem 0.6rem', borderRadius: '4px', background: '#eee', color: '#333', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>
                           {assoc.plan}

@@ -157,6 +157,7 @@ export class BudgetController {
   async executeProfitDistribution(
     @Param('associationId') associationId: string,
     @Param('year') yearStr: string,
+    @Body() dto: SimulateProfitDistributionDto,
     @Request() req: any,
   ) {
     const year = parseInt(yearStr, 10);
@@ -177,7 +178,16 @@ export class BudgetController {
       throw new ForbiddenException('Seuls le Président et le Trésorier peuvent valider la redistribution des bénéfices.');
     }
 
-    return this.budgetRepository.executeProfitDistribution(assoc.id, year, req.user?.id);
+    return this.budgetRepository.executeProfitDistribution(
+      {
+        associationId: assoc.id,
+        year,
+        baseUnitAmount: dto.baseUnitAmount,
+        partyExpenses: dto.partyExpenses,
+        retainedReserve: dto.retainedReserve,
+      },
+      req.user?.id,
+    );
   }
 
   @Get('associations/:associationId/profit-distributions')

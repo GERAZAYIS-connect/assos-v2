@@ -301,90 +301,49 @@ export class PrismaBudgetRepository implements IBudgetRepository {
       };
     });
 
-    // Upsert ProfitDistribution record
-    const existing = await this.prisma.profitDistribution.findFirst({
-      where: { associationId: assocId, year },
+    // Return simulation result without saving to database
+    // Attach member details for the UI
+    const simulatedItems = dividendItemsData.map((item) => {
+      const m = members.find((x) => x.id === item.memberId);
+      return {
+        ...item,
+        member: m ? { profile: m.profile, user: m.user } : null,
+      };
     });
 
-    if (existing) {
-      // Delete old dividend items
-      await this.prisma.dividendItem.deleteMany({ where: { distributionId: existing.id } });
-
-      return this.prisma.profitDistribution.update({
-        where: { id: existing.id },
-        data: {
-          baseUnitAmount,
-          partyExpenses,
-          retainedReserve,
-          netProfit,
-          distributableProfit,
-          totalMonthSavings,
-          monthlyGainCoeff,
-          status: DistributionStatus.SIMULATED,
-          items: {
-            create: dividendItemsData,
-          },
-        },
-        include: {
-          items: {
-            include: {
-              member: {
-                include: {
-                  profile: { select: { firstName: true, lastName: true } },
-                  user: { select: { email: true } },
-                },
-              },
-            },
-          },
-        },
-      });
-    }
-
-    return this.prisma.profitDistribution.create({
-      data: {
-        associationId: assocId,
-        year,
-        baseUnitAmount,
-        partyExpenses,
-        retainedReserve,
-        netProfit,
-        distributableProfit,
-        totalMonthSavings,
-        monthlyGainCoeff,
-        status: DistributionStatus.SIMULATED,
-        items: {
-          create: dividendItemsData,
-        },
-      },
-      include: {
-        items: {
-          include: {
-            member: {
-              include: {
-                profile: { select: { firstName: true, lastName: true } },
-                user: { select: { email: true } },
-              },
-            },
-          },
-        },
-      },
-    });
+    return {
+      id: 'simulation-id-temp', // Fake ID for UI purposes
+      associationId: assocId,
+      year,
+      baseUnitAmount,
+      partyExpenses,
+      retainedReserve,
+      netProfit,
+      distributableProfit,
+      totalMonthSavings,
+      monthlyGainCoeff,
+      status: DistributionStatus.SIMULATED,
+      items: simulatedItems,
+    };
   }
 
-  async executeProfitDistribution(associationId: string, year: number, adminUserId: string): Promise<any> {
-    const assocId = await this.resolveAssociationId(associationId);
+  async executeProfitDistribution(input: CreateProfitDistributionInput, adminUserId: string): Promise<any> {
+    const assocId = await this.resolveAssociationId(input.associationId);
     if (!assocId) throw new BadRequestException('Association introuvable.');
 
-    const dist = await this.prisma.profitDistribution.findFirst({
-      where: { associationId: assocId, year },
-      include: { items: true },
-    });
+    const year = input.year;
 
-    if (!dist) throw new NotFoundException(`Aucune simulation de redistribution trouvée pour l'année ${year}.`);
-    if (dist.status === DistributionStatus.EXECUTED) {
+    // Check if it was already executed
+    const existing = await this.prisma.profitDistribution.findFirst({
+      where: { associationId: assocId, year, status: DistributionStatus.EXECUTED },
+    });
+    if (existing) {
       throw new BadRequestException('Cette redistribution a déjà été validée et exécutée.');
     }
 
+    // Call the stateless simulation to get exact values based on real data
+    const dist = await this.calculateProfitDistribution(input);
+    
     // Find active caisse for financial disbursement entry
     const caisse = await this.prisma.caisse.findFirst({
       where: { associationId: assocId, isActive: true },
@@ -392,11 +351,52 @@ export class PrismaBudgetRepository implements IBudgetRepository {
     });
     if (!caisse) throw new BadRequestException('Aucune caisse active disponible.');
 
+    // Remove any previously orphaned SIMULATED record (from before the refactor) just in case
+    const oldSimulated = await this.prisma.profitDistribution.findFirst({
+      where: { associationId: assocId, year, status: DistributionStatus.SIMULATED },
+    });
+    if (oldSimulated) {
+      await this.prisma.dividendItem.deleteMany({ where: { distributionId: oldSimulated.id } });
+      await this.prisma.profitDistribution.delete({ where: { id: oldSimulated.id } });
+    }
+
+    // Prepare items for DB creation (removing the fake ID and UI member relations)
+    const itemsData = dist.items.map((item: any) => ({
+      memberId: item.memberId,
+      totalSavings: item.totalSavings,
+      monthSavings: item.monthSavings,
+      dividendAmount: item.dividendAmount,
+      totalPayout: item.totalPayout,
+      status: DividendStatus.PAID,
+      paidAt: new Date(),
+    }));
+
     // ACID Transaction Execution
     return this.prisma.$transaction(async (tx) => {
       const now = new Date();
 
-      for (const item of dist.items) {
+      // Create ProfitDistribution and DividendItems
+      const executedDist = await tx.profitDistribution.create({
+        data: {
+          associationId: assocId,
+          year,
+          baseUnitAmount: dist.baseUnitAmount,
+          partyExpenses: dist.partyExpenses,
+          retainedReserve: dist.retainedReserve,
+          netProfit: dist.netProfit,
+          distributableProfit: dist.distributableProfit,
+          totalMonthSavings: dist.totalMonthSavings,
+          monthlyGainCoeff: dist.monthlyGainCoeff,
+          status: DistributionStatus.EXECUTED,
+          executedAt: now,
+          items: {
+            create: itemsData,
+          },
+        },
+        include: { items: true },
+      });
+
+      for (const item of executedDist.items) {
         if (item.totalPayout > 0) {
           const ref = `DIV-${year}-${Math.floor(1000 + Math.random() * 9000)}-${item.id.slice(-4)}`.toUpperCase();
 
@@ -422,11 +422,6 @@ export class PrismaBudgetRepository implements IBudgetRepository {
             data: { balance: { decrement: item.totalPayout } },
           });
         }
-
-        await tx.dividendItem.update({
-          where: { id: item.id },
-          data: { status: DividendStatus.PAID, paidAt: now },
-        });
       }
 
       await tx.auditLog.create({
@@ -436,34 +431,17 @@ export class PrismaBudgetRepository implements IBudgetRepository {
           category: AuditCategory.TREASURY,
           action: 'EXECUTE_PROFIT_DISTRIBUTION',
           targetType: 'ProfitDistribution',
-          targetId: dist.id,
+          targetId: executedDist.id,
           metadata: JSON.stringify({
             year,
-            loanInterestNetProfit: dist.netProfit,
-            distributableProfit: dist.distributableProfit,
-            itemCount: dist.items.length,
+            loanInterestNetProfit: executedDist.netProfit,
+            distributableProfit: executedDist.distributableProfit,
+            itemCount: executedDist.items.length,
           }),
         },
       });
 
-      return tx.profitDistribution.update({
-        where: { id: dist.id },
-        data: {
-          status: DistributionStatus.EXECUTED,
-          executedAt: now,
-        },
-        include: {
-          items: {
-            include: {
-              member: {
-                include: {
-                  profile: { select: { firstName: true, lastName: true } },
-                },
-              },
-            },
-          },
-        },
-      });
+      return executedDist;
     });
   }
 

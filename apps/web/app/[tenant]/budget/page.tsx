@@ -127,8 +127,9 @@ export default function BudgetDashboardPage() {
       });
 
       if (res.ok) {
+        const simulationData = await res.json();
+        setDistribution(simulationData);
         setShowProfitModal(false);
-        initPage();
       } else {
         const data = await res.json().catch(() => ({}));
         setModalError(data.message || 'Erreur lors de la simulation de cassation.');
@@ -140,13 +141,25 @@ export default function BudgetDashboardPage() {
     }
   };
 
+  const handleCancelSimulation = () => {
+    if (!confirm('Voulez-vous annuler la simulation en cours ? (Aucun impact sur la base de données)')) return;
+    setDistribution(null);
+  };
+
   const handleExecuteProfit = async () => {
-    if (!confirm('Voulez-vous vraiment valider et exécuter la redistribution des bénéfices (Cassation) pour cet exercice ? Cette action est définitive.')) return;
+    if (!distribution) return;
+    if (!confirm('Voulez-vous vraiment valider et exécuter la redistribution des bénéfices (Cassation) pour cet exercice ? Cette action est définitive et modifie la caisse.')) return;
 
     setSubmitting(true);
     try {
       const res = await fetch(`/api/backend/associations/${tenantSlug}/budgets/${currentYear}/execute-profit`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          baseUnitAmount: distribution.baseUnitAmount,
+          partyExpenses: distribution.partyExpenses,
+          retainedReserve: distribution.retainedReserve,
+        }),
       });
 
       if (res.ok) {
@@ -364,10 +377,21 @@ export default function BudgetDashboardPage() {
             <span className="material-symbols-rounded">payments</span> Redistribution des Bénéfices & Procès de "Cassation" (Fin d'Exercice)
           </span>
           {distribution && distribution.status === 'SIMULATED' && isBureau && (
-            <button className={styles.primaryBtn} onClick={handleExecuteProfit} disabled={submitting}>
-              <span className="material-symbols-rounded">check_circle</span>
-              Valider & Exécuter la Redistribution
-            </button>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button 
+                className={styles.secondaryBtn} 
+                onClick={handleCancelSimulation} 
+                disabled={submitting}
+                style={{ borderColor: '#ef4444', color: '#ef4444' }}
+              >
+                <span className="material-symbols-rounded">close</span>
+                Annuler la Simulation
+              </button>
+              <button className={styles.primaryBtn} onClick={handleExecuteProfit} disabled={submitting}>
+                <span className="material-symbols-rounded">check_circle</span>
+                Valider & Exécuter
+              </button>
+            </div>
           )}
         </div>
 
