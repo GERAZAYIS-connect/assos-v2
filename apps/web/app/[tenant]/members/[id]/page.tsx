@@ -545,6 +545,12 @@ export default function MemberDetailPage() {
               <h2>Informations Personnelles</h2>
               <p>Mettez à jour vos coordonnées et votre identité officielle.</p>
             </div>
+            {!(currentUserRole === 'SECRETARY' || currentUserRole === 'PRESIDENT') && (
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', fontSize: '0.875rem', color: '#64748b' }}>
+                <span className="material-symbols-rounded" style={{ fontSize: '18px', color: '#64748b' }}>info</span>
+                <span>Lecture seule. Pour modifier vos informations personnelles, veuillez vous adresser à la Secrétaire ou au Président.</span>
+              </div>
+            )}
             <div className={styles.avatarUploadSection}>
               <div className={styles.avatarUploadPreview}>
                 {photoUrl ? (
@@ -554,22 +560,26 @@ export default function MemberDetailPage() {
                 )}
               </div>
               <div className={styles.avatarUploadInfo}>
-                <label className={styles.uploadPhotoBtn}>
-                  <span className="material-symbols-rounded">photo_camera</span>
-                  {uploadingPhoto ? 'Conversion WebP...' : 'Changer la photo de profil'}
-                  <input type="file" accept="image/*" onChange={handlePhotoUpload} hidden />
-                </label>
+                {(currentUserRole === 'SECRETARY' || currentUserRole === 'PRESIDENT') ? (
+                  <label className={styles.uploadPhotoBtn}>
+                    <span className="material-symbols-rounded">photo_camera</span>
+                    {uploadingPhoto ? 'Conversion WebP...' : 'Changer la photo de profil'}
+                    <input type="file" accept="image/*" onChange={handlePhotoUpload} hidden />
+                  </label>
+                ) : (
+                  <p style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, margin: 0 }}>Photo de profil officielle</p>
+                )}
                 <p>Format WebP optimisé automatiquement (max 512x512)</p>
               </div>
             </div>
             <div className={styles.grid2}>
               <div className={styles.field}>
                 <label>Prénom</label>
-                <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} disabled={!(currentUserRole === 'SECRETARY' || currentUserRole === 'PRESIDENT')} />
               </div>
               <div className={styles.field}>
                 <label>Nom de famille</label>
-                <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} disabled={!(currentUserRole === 'SECRETARY' || currentUserRole === 'PRESIDENT')} />
               </div>
               <div className={styles.field}>
                 <label>Email (Compte)</label>
@@ -577,34 +587,36 @@ export default function MemberDetailPage() {
               </div>
               <div className={styles.field}>
                 <label>Numéro de Téléphone</label>
-                <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} disabled={!(currentUserRole === 'SECRETARY' || currentUserRole === 'PRESIDENT')} />
               </div>
               <div className={styles.field}>
                 <label>Profession</label>
-                <input type="text" value={profession} onChange={(e) => setProfession(e.target.value)} placeholder="ex: Ingénieur, Commerçant" />
+                <input type="text" value={profession} onChange={(e) => setProfession(e.target.value)} placeholder="ex: Ingénieur, Commerçant" disabled={!(currentUserRole === 'SECRETARY' || currentUserRole === 'PRESIDENT')} />
               </div>
               <div className={styles.field}>
                 <label>Numéro CNI / Passeport</label>
-                <input type="text" value={idCardNumber} onChange={(e) => setIdCardNumber(e.target.value)} />
+                <input type="text" value={idCardNumber} onChange={(e) => setIdCardNumber(e.target.value)} disabled={!(currentUserRole === 'SECRETARY' || currentUserRole === 'PRESIDENT')} />
               </div>
               <div className={styles.fieldFull}>
                 <label>Adresse de résidence</label>
-                <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Yaoundé, Quartier Bastos" />
+                <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Yaoundé, Quartier Bastos" disabled={!(currentUserRole === 'SECRETARY' || currentUserRole === 'PRESIDENT')} />
               </div>
               <div className={styles.field}>
                 <label>Contact d'urgence (Nom)</label>
-                <input type="text" value={emergencyContactName} onChange={(e) => setEmergencyContactName(e.target.value)} />
+                <input type="text" value={emergencyContactName} onChange={(e) => setEmergencyContactName(e.target.value)} disabled={!(currentUserRole === 'SECRETARY' || currentUserRole === 'PRESIDENT')} />
               </div>
               <div className={styles.field}>
                 <label>Contact d'urgence (Téléphone)</label>
-                <input type="text" value={emergencyContactPhone} onChange={(e) => setEmergencyContactPhone(e.target.value)} />
+                <input type="text" value={emergencyContactPhone} onChange={(e) => setEmergencyContactPhone(e.target.value)} disabled={!(currentUserRole === 'SECRETARY' || currentUserRole === 'PRESIDENT')} />
               </div>
             </div>
-            <div className={styles.formFooter}>
-              <button type="submit" className={styles.saveBtn} disabled={saving}>
-                {saving ? 'Enregistrement...' : 'Enregistrer les modifications'}
-              </button>
-            </div>
+            {(currentUserRole === 'SECRETARY' || currentUserRole === 'PRESIDENT') && (
+              <div className={styles.formFooter}>
+                <button type="submit" className={styles.saveBtn} disabled={saving}>
+                  {saving ? 'Enregistrement...' : 'Enregistrer les modifications'}
+                </button>
+              </div>
+            )}
           </form>
         </div>
       )}
@@ -654,6 +666,12 @@ export default function MemberDetailPage() {
                 séances et à percevoir les reversements.
               </p>
             </div>
+            {!(currentUserRole === 'SECRETARY' || currentUserRole === 'PRESIDENT') && (
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', fontSize: '0.875rem', color: '#64748b' }}>
+                <span className="material-symbols-rounded" style={{ fontSize: '18px', color: '#64748b' }}>info</span>
+                <span>Lecture seule. Seul le Président ou la Secrétaire peut configurer ou révoquer une procuration.</span>
+              </div>
+            )}
             <div className={styles.grid2}>
               <div className={styles.field}>
                 <label>Nom du Mandataire</label>
@@ -662,6 +680,7 @@ export default function MemberDetailPage() {
                   value={proxyName}
                   onChange={(e) => setProxyName(e.target.value)}
                   placeholder="Nom complet du représentant"
+                  disabled={!(currentUserRole === 'SECRETARY' || currentUserRole === 'PRESIDENT')}
                 />
               </div>
               <div className={styles.field}>
@@ -671,6 +690,7 @@ export default function MemberDetailPage() {
                   value={proxyPhone}
                   onChange={(e) => setProxyPhone(e.target.value)}
                   placeholder="+237 6XX XXX XXX"
+                  disabled={!(currentUserRole === 'SECRETARY' || currentUserRole === 'PRESIDENT')}
                 />
               </div>
               <div className={styles.fieldFull}>
@@ -681,6 +701,7 @@ export default function MemberDetailPage() {
                   rows={3}
                   placeholder="Ex: Autorisé à percevoir la tontine et à voter lors des AG..."
                   className={styles.textarea}
+                  disabled={!(currentUserRole === 'SECRETARY' || currentUserRole === 'PRESIDENT')}
                 />
               </div>
               <div className={styles.field}>
@@ -690,38 +711,41 @@ export default function MemberDetailPage() {
                   value={proxyExpiresAt}
                   onChange={(e) => setProxyExpiresAt(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
+                  disabled={!(currentUserRole === 'SECRETARY' || currentUserRole === 'PRESIDENT')}
                 />
               </div>
             </div>
-            <div className={styles.formFooter}>
-              <button type="submit" className={styles.saveBtn} disabled={proxySaving}>
-                {proxySaving ? 'Enregistrement...' : 'Enregistrer la Procuration'}
-              </button>
-              {(proxyStatus === 'ACTIVE' || proxyStatus === 'EXPIRED') && (
-                <>
-                  {!revokeConfirm ? (
-                    <button
-                      type="button"
-                      className={styles.revokeBtn}
-                      onClick={() => setRevokeConfirm(true)}
-                    >
-                      <span className="material-symbols-rounded">block</span>
-                      Révoquer la Procuration
-                    </button>
-                  ) : (
-                    <div className={styles.revokeConfirm}>
-                      <p>Confirmer la révocation ?</p>
-                      <button type="button" className={styles.revokeBtnConfirm} onClick={handleRevokeProxy} disabled={proxySaving}>
-                        Oui, Révoquer
+            {(currentUserRole === 'SECRETARY' || currentUserRole === 'PRESIDENT') && (
+              <div className={styles.formFooter}>
+                <button type="submit" className={styles.saveBtn} disabled={proxySaving}>
+                  {proxySaving ? 'Enregistrement...' : 'Enregistrer la Procuration'}
+                </button>
+                {(proxyStatus === 'ACTIVE' || proxyStatus === 'EXPIRED') && (
+                  <>
+                    {!revokeConfirm ? (
+                      <button
+                        type="button"
+                        className={styles.revokeBtn}
+                        onClick={() => setRevokeConfirm(true)}
+                      >
+                        <span className="material-symbols-rounded">block</span>
+                        Révoquer la Procuration
                       </button>
-                      <button type="button" className={styles.cancelBtn} onClick={() => setRevokeConfirm(false)}>
-                        Annuler
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+                    ) : (
+                      <div className={styles.revokeConfirm}>
+                        <p>Confirmer la révocation ?</p>
+                        <button type="button" className={styles.revokeBtnConfirm} onClick={handleRevokeProxy} disabled={proxySaving}>
+                          Oui, Révoquer
+                        </button>
+                        <button type="button" className={styles.cancelBtn} onClick={() => setRevokeConfirm(false)}>
+                          Annuler
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
           </form>
         </div>
       )}

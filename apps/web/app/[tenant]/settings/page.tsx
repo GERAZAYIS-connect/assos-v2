@@ -239,6 +239,18 @@ export default function SettingsPage() {
     );
   }
 
+  if (!isPresident) {
+    return (
+      <div className={styles.container} style={{ fontFamily: 'system-ui, sans-serif', padding: '3rem', textAlign: 'center' }}>
+        <span className="material-symbols-rounded" style={{ fontSize: '4rem', color: '#ef4444', marginBottom: '1rem' }}>block</span>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.5rem' }}>Accès refusé</h2>
+        <p style={{ color: '#64748b', maxWidth: 400, margin: '0 auto' }}>
+          Seul le Président de l'association possède les droits d'accès aux paramètres et à l'abonnement de la plateforme.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container} style={{ fontFamily: 'system-ui, sans-serif' }}>
       

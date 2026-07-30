@@ -8,6 +8,8 @@ import { CastVoteUseCase } from '../../application/use-cases/cast-vote.use-case'
 import { CloseResolutionUseCase } from '../../application/use-cases/close-resolution.use-case';
 import { ResolutionCategory, VoteType, VoteChoice, AssociationRole } from '@prisma/client';
 import { PrismaService } from '../../../../core/prisma/prisma.service';
+import { AssociationRoleGuard } from '../../../../common/guards/association-role.guard';
+import { Roles } from '../../../../common/decorators/roles.decorator';
 
 class CreateResolutionDto {
   @IsString()
@@ -57,7 +59,7 @@ class CastVoteDto {
 }
 
 @Controller('associations/:associationId/resolutions')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
 export class GovernanceController {
   constructor(
     private readonly prisma: PrismaService,
@@ -69,69 +71,51 @@ export class GovernanceController {
   ) {}
 
   @Get()
-  async listResolutions(@Param('associationId') associationId: string) {
-    return this.listResolutionsUseCase.execute(associationId);
+  @Roles()
+  async listResolutions(@Param('associationId') associationId: string, @Request() req?: any) {
+    return this.listResolutionsUseCase.execute(req?.resolvedAssociationId || associationId);
   }
 
   @Get(':resolutionId')
+  @Roles()
   async getResolutionDetails(@Param('resolutionId') resolutionId: string) {
     return this.getResolutionDetailsUseCase.execute(resolutionId);
   }
 
   @Post()
+  @Roles('SECRETARY')
   async createResolution(
     @Param('associationId') associationId: string,
     @Body() dto: CreateResolutionDto,
     @Request() req: any,
   ) {
-    const assoc = await this.prisma.association.findFirst({
-      where: { OR: [{ id: associationId }, { slug: associationId }] },
-      select: { id: true },
-    });
-    if (!assoc) throw new BadRequestException('Association introuvable.');
-
-    const member = await this.prisma.associationMember.findFirst({
-      where: { associationId: assoc.id, userId: req.user?.id, status: 'ACTIVE' },
-    });
-
-    if (!member || (member.role !== 'PRESIDENT' && member.role !== 'SECRETARY' && member.role !== 'TREASURER')) {
-      throw new ForbiddenException('Seuls les membres du Bureau (Président, Secrétaire, Trésorier) sont habilités à créer un vote ou une résolution.');
-    }
-
     const resolution = await this.createResolutionUseCase.execute({
       ...dto,
-      associationId: assoc.id,
+      associationId: req.resolvedAssociationId || associationId,
     });
     return resolution.toJSON();
   }
 
   @Post(':resolutionId/vote')
+  @Roles()
   async castVote(
     @Param('associationId') associationId: string,
     @Param('resolutionId') resolutionId: string,
     @Body() dto: CastVoteDto,
     @Request() req: any,
   ) {
-    // Resolve memberId from current user
-    const assoc = await this.prisma.association.findFirst({
-      where: { OR: [{ id: associationId }, { slug: associationId }] },
-      select: { id: true },
-    });
-    if (!assoc) throw new BadRequestException('Association introuvable.');
-
-    const member = await this.prisma.associationMember.findFirst({
-      where: { associationId: assoc.id, userId: req.user.id, status: 'ACTIVE' },
-    });
-    if (!member) throw new BadRequestException('Vous n\'êtes pas un membre actif habilité à voter.');
+    const membership = req.membership;
+    if (!membership) throw new BadRequestException('Vous n\'êtes pas un membre actif habilité à voter.');
 
     return this.castVoteUseCase.execute({
       resolutionId,
-      voterMemberId: member.id,
+      voterMemberId: membership.id,
       choice: dto.choice,
     });
   }
 
   @Post(':resolutionId/close')
+  @Roles('SECRETARY')
   async closeResolution(@Param('resolutionId') resolutionId: string) {
     return this.closeResolutionUseCase.execute(resolutionId);
   }

@@ -17,6 +17,8 @@ import { IsString, IsNotEmpty, IsNumber, IsOptional, IsEnum, Min } from 'class-v
 import { BUDGET_REPOSITORY, IBudgetRepository } from '../../domain/repositories/budget.repository.interface';
 import { BudgetItemType, BudgetStatus } from '@prisma/client';
 import { PrismaService } from '../../../../core/prisma/prisma.service';
+import { AssociationRoleGuard } from '../../../../common/guards/association-role.guard';
+import { Roles } from '../../../../common/decorators/roles.decorator';
 
 export class CreateBudgetItemDto {
   @IsOptional()
@@ -77,29 +79,36 @@ export class BudgetController {
     private readonly prisma: PrismaService,
   ) {}
 
+  /** GET budgets — TREASURER + PRESIDENT */
   @Get('associations/:associationId/budgets')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
+  @Roles('TREASURER')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List all annual budgets' })
-  async listAnnualBudgets(@Param('associationId') associationId: string) {
-    return this.budgetRepository.listAnnualBudgets(associationId);
+  async listAnnualBudgets(@Param('associationId') associationId: string, @Request() req?: any) {
+    return this.budgetRepository.listAnnualBudgets(req?.resolvedAssociationId || associationId);
   }
 
+  /** GET budget year stats — TREASURER + PRESIDENT */
   @Get('associations/:associationId/budgets/:year')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
+  @Roles('TREASURER')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get budget details and execution stats for a year' })
+  @ApiOperation({ summary: 'Get budget execution stats for a year' })
   async getBudgetExecutionStats(
     @Param('associationId') associationId: string,
     @Param('year') yearStr: string,
+    @Request() req?: any,
   ) {
     const year = parseInt(yearStr, 10);
     if (isNaN(year)) throw new BadRequestException('Année invalide.');
-    return this.budgetRepository.getBudgetExecutionStats(associationId, year);
+    return this.budgetRepository.getBudgetExecutionStats(req?.resolvedAssociationId || associationId, year);
   }
 
+  /** POST create budget — TREASURER + PRESIDENT */
   @Post('associations/:associationId/budgets')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
+  @Roles('TREASURER')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create annual budget' })
   async createAnnualBudget(
@@ -107,31 +116,18 @@ export class BudgetController {
     @Body() dto: CreateAnnualBudgetDto,
     @Request() req: any,
   ) {
-    // RBAC: Check if user is Bureau member
-    const assoc = await this.prisma.association.findFirst({
-      where: { OR: [{ id: associationId }, { slug: associationId }] },
-      select: { id: true },
-    });
-    if (!assoc) throw new BadRequestException('Association introuvable.');
-
-    const member = await this.prisma.associationMember.findFirst({
-      where: { associationId: assoc.id, userId: req.user?.id, status: 'ACTIVE' },
-    });
-
-    if (!member || (member.role !== 'PRESIDENT' && member.role !== 'TREASURER' && member.role !== 'SECRETARY')) {
-      throw new ForbiddenException('Seuls les membres du Bureau sont habilités à gérer le budget prévisionnel.');
-    }
-
     return this.budgetRepository.createAnnualBudget({
       ...dto,
-      associationId: assoc.id,
+      associationId: req.resolvedAssociationId || associationId,
     });
   }
 
+  /** POST simulate profit — TREASURER + PRESIDENT */
   @Post('associations/:associationId/budgets/:year/simulate-profit')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
+  @Roles('TREASURER')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Simulate Cassation profit distribution' })
+  @ApiOperation({ summary: 'Simulate Cassation profit distribution (read-only, no DB write)' })
   async simulateProfitDistribution(
     @Param('associationId') associationId: string,
     @Param('year') yearStr: string,
@@ -140,9 +136,8 @@ export class BudgetController {
   ) {
     const year = parseInt(yearStr, 10);
     if (isNaN(year)) throw new BadRequestException('Année invalide.');
-
     return this.budgetRepository.calculateProfitDistribution({
-      associationId,
+      associationId: req.resolvedAssociationId || associationId,
       year,
       baseUnitAmount: dto.baseUnitAmount,
       partyExpenses: dto.partyExpenses,
@@ -150,10 +145,12 @@ export class BudgetController {
     });
   }
 
+  /** POST execute profit — PRESIDENT ONLY (acte final irréversible) */
   @Post('associations/:associationId/budgets/:year/execute-profit')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
+  @Roles('PRESIDENT')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Execute Cassation profit distribution' })
+  @ApiOperation({ summary: 'Execute Cassation profit distribution (President only)' })
   async executeProfitDistribution(
     @Param('associationId') associationId: string,
     @Param('year') yearStr: string,
@@ -162,25 +159,9 @@ export class BudgetController {
   ) {
     const year = parseInt(yearStr, 10);
     if (isNaN(year)) throw new BadRequestException('Année invalide.');
-
-    // RBAC check
-    const assoc = await this.prisma.association.findFirst({
-      where: { OR: [{ id: associationId }, { slug: associationId }] },
-      select: { id: true },
-    });
-    if (!assoc) throw new BadRequestException('Association introuvable.');
-
-    const member = await this.prisma.associationMember.findFirst({
-      where: { associationId: assoc.id, userId: req.user?.id, status: 'ACTIVE' },
-    });
-
-    if (!member || (member.role !== 'PRESIDENT' && member.role !== 'TREASURER')) {
-      throw new ForbiddenException('Seuls le Président et le Trésorier peuvent valider la redistribution des bénéfices.');
-    }
-
     return this.budgetRepository.executeProfitDistribution(
       {
-        associationId: assoc.id,
+        associationId: req.resolvedAssociationId || associationId,
         year,
         baseUnitAmount: dto.baseUnitAmount,
         partyExpenses: dto.partyExpenses,
@@ -190,12 +171,14 @@ export class BudgetController {
     );
   }
 
+  /** GET profit distributions — TREASURER + PRESIDENT */
   @Get('associations/:associationId/profit-distributions')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
+  @Roles('TREASURER')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List all historical profit distributions' })
-  async listProfitDistributions(@Param('associationId') associationId: string) {
-    return this.budgetRepository.listProfitDistributions(associationId);
+  async listProfitDistributions(@Param('associationId') associationId: string, @Request() req?: any) {
+    return this.budgetRepository.listProfitDistributions(req?.resolvedAssociationId || associationId);
   }
 
   @Get('associations/:associationId/budgets/:year/profit-distribution')

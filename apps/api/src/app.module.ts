@@ -7,6 +7,7 @@ import { PrismaModule } from './core/prisma/prisma.module';
 import { AuditModule } from './core/audit/audit.module';
 import { GlobalExceptionFilter } from './core/exceptions/global-exception.filter';
 import { SubscriptionGuard } from './common/guards/subscription.guard';
+import { SharedModule } from './common/modules/shared.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { AssociationsModule } from './modules/associations/associations.module';
 import { MembersModule } from './modules/members/members.module';
@@ -33,6 +34,7 @@ import { ContactModule } from './modules/contact/contact.module';
     ScheduleModule.forRoot(),
     PrismaModule,
     AuditModule,
+    SharedModule, // Guard partagé AssociationRoleGuard (global)
     AuthModule,
     AssociationsModule,
     MembersModule,

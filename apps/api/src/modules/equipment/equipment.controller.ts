@@ -10,10 +10,12 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import { AssociationRoleGuard } from '../../common/guards/association-role.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 
 @ApiTags('equipment')
 @Controller({ path: 'associations/:assocId/equipment', version: '1' })
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
 @ApiBearerAuth()
 export class EquipmentController {
   constructor(private readonly prisma: PrismaService) {}
@@ -31,6 +33,7 @@ export class EquipmentController {
   }
 
   @Get()
+  @Roles()
   @ApiOperation({ summary: 'Get all equipment for an association' })
   async getEquipment(@Param('assocId') assocId: string) {
     const targetId = await this.resolveAssociationId(assocId);
@@ -43,6 +46,7 @@ export class EquipmentController {
   }
 
   @Post()
+  @Roles('SECRETARY')
   @ApiOperation({ summary: 'Add a new equipment item' })
   async createEquipment(
     @Param('assocId') assocId: string,
@@ -77,6 +81,7 @@ export class EquipmentController {
   }
 
   @Get('rentals')
+  @Roles()
   @ApiOperation({ summary: 'Get all equipment rentals' })
   async getRentals(@Param('assocId') assocId: string) {
     const targetId = await this.resolveAssociationId(assocId);
@@ -89,6 +94,7 @@ export class EquipmentController {
   }
 
   @Post('rentals')
+  @Roles('SECRETARY')
   @ApiOperation({ summary: 'Create an equipment rental reservation' })
   async createRental(
     @Param('assocId') assocId: string,

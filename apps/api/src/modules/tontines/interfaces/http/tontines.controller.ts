@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get, Param, Query, UseGuards, Request } from '@nestjs/common';
+import { Body, Controller, Post, Get, Param, Query, UseGuards, Request, ForbiddenException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { IsString, IsNotEmpty, IsNumber, Min, IsOptional, IsEnum, IsArray, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -11,6 +11,8 @@ import { RenewTontineUseCase } from '../../application/use-cases/renew-tontine.u
 import { SimulateTontineAuctionUseCase, Bid } from '../../application/use-cases/simulate-tontine-auction.use-case';
 import { StartTontineMeetingUseCase } from '../../application/use-cases/start-tontine-meeting.use-case';
 import { TontineType, TontineFrequency } from '@prisma/client';
+import { AssociationRoleGuard } from '../../../../common/guards/association-role.guard';
+import { Roles } from '../../../../common/decorators/roles.decorator';
 
 class CreateTontineDto {
   @IsString()
@@ -102,7 +104,7 @@ class StartMeetingDto {
 }
 
 @Controller('associations/:associationId/tontines')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
 export class TontinesController {
   constructor(
     private readonly createTontineUseCase: CreateTontineUseCase,
@@ -116,35 +118,66 @@ export class TontinesController {
   ) {}
 
   @Get()
+  @Roles()
   async listTontines(
     @Param('associationId') associationId: string,
     @Query('memberId') memberId?: string,
+    @Request() req?: any,
   ) {
-    const list = await this.listTontinesUseCase.execute({ associationId, memberId });
+    const membership = req.membership;
+    if (membership?.role === 'MEMBER' || membership?.role === 'CENSOR') {
+      const list = await this.listTontinesUseCase.execute({
+        associationId: req.resolvedAssociationId || associationId,
+        memberId: membership.id,
+      });
+      return list.map((t) => t.toJSON());
+    }
+
+    const list = await this.listTontinesUseCase.execute({
+      associationId: req.resolvedAssociationId || associationId,
+      memberId,
+    });
     return list.map((t) => t.toJSON());
   }
 
   @Get(':tontineId')
+  @Roles()
   async getTontineDetails(
     @Param('associationId') associationId: string,
     @Param('tontineId') tontineId: string,
+    @Request() req: any,
   ) {
-    return this.getTontineDetailsUseCase.execute(associationId, tontineId);
+    const membership = req.membership;
+    const tontine = await this.getTontineDetailsUseCase.execute(
+      req.resolvedAssociationId || associationId,
+      tontineId,
+    );
+
+    if (membership?.role === 'MEMBER' || membership?.role === 'CENSOR') {
+      const isPart = tontine.members.some((m: any) => m.memberId === membership.id);
+      if (!isPart) {
+        throw new ForbiddenException("Vous n'êtes pas participant de cette tontine.");
+      }
+    }
+    return tontine;
   }
 
   @Post()
+  @Roles('TREASURER')
   async createTontine(
     @Param('associationId') associationId: string,
     @Body() dto: CreateTontineDto,
+    @Request() req?: any,
   ) {
     const tontine = await this.createTontineUseCase.execute({
       ...dto,
-      associationId,
+      associationId: req?.resolvedAssociationId || associationId,
     });
     return tontine.toJSON();
   }
 
   @Post(':tontineId/simulate-auction')
+  @Roles('TREASURER')
   async simulateAuction(
     @Param('tontineId') tontineId: string,
     @Body() dto: SimulateAuctionDto,
@@ -158,13 +191,15 @@ export class TontinesController {
   }
 
   @Post(':tontineId/start-meeting')
+  @Roles('TREASURER')
   async startMeeting(
     @Param('associationId') associationId: string,
     @Param('tontineId') tontineId: string,
     @Body() dto: StartMeetingDto,
+    @Request() req?: any,
   ) {
     return this.startTontineMeetingUseCase.execute({
-      associationId,
+      associationId: req?.resolvedAssociationId || associationId,
       tontineId,
       location: dto.location,
       title: dto.title,
@@ -172,6 +207,7 @@ export class TontinesController {
   }
 
   @Post('rounds/:roundId/pay')
+  @Roles('TREASURER')
   async payContribution(
     @Param('associationId') associationId: string,
     @Param('roundId') roundId: string,
@@ -188,6 +224,7 @@ export class TontinesController {
   }
 
   @Post('rounds/:roundId/attribute')
+  @Roles('TREASURER')
   async attributePot(
     @Param('associationId') associationId: string,
     @Param('roundId') roundId: string,
@@ -205,6 +242,7 @@ export class TontinesController {
   }
 
   @Post(':tontineId/renew')
+  @Roles('TREASURER')
   async renewTontine(
     @Param('associationId') associationId: string,
     @Param('tontineId') tontineId: string,

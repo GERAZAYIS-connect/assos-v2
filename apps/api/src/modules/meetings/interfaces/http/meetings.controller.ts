@@ -8,6 +8,8 @@ import { GetMeetingDetailsUseCase } from '../../application/use-cases/get-meetin
 import { RecordAttendanceUseCase } from '../../application/use-cases/record-attendance.use-case';
 import { SaveMinutesUseCase } from '../../application/use-cases/save-minutes.use-case';
 import { MeetingType, AttendanceStatus } from '@prisma/client';
+import { AssociationRoleGuard } from '../../../../common/guards/association-role.guard';
+import { Roles } from '../../../../common/decorators/roles.decorator';
 
 class CreateMeetingDto {
   @IsString()
@@ -71,7 +73,7 @@ class SaveMinutesDto {
 }
 
 @Controller('associations/:associationId/meetings')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
 export class MeetingsController {
   constructor(
     private readonly createMeetingUseCase: CreateMeetingUseCase,
@@ -81,29 +83,38 @@ export class MeetingsController {
     private readonly saveMinutesUseCase: SaveMinutesUseCase,
   ) {}
 
+  /** GET /meetings — Tous les membres actifs (réunions visibles par tous) */
   @Get()
-  async listMeetings(@Param('associationId') associationId: string) {
-    return this.listMeetingsUseCase.execute(associationId);
+  @Roles() // Tous membres
+  async listMeetings(@Param('associationId') associationId: string, @Request() req?: any) {
+    return this.listMeetingsUseCase.execute(req?.resolvedAssociationId || associationId);
   }
 
+  /** GET /meetings/:id — Tous les membres actifs */
   @Get(':meetingId')
+  @Roles() // Tous membres
   async getMeetingDetails(@Param('meetingId') meetingId: string) {
     return this.getMeetingDetailsUseCase.execute(meetingId);
   }
 
+  /** POST /meetings — SECRETARY + PRESIDENT (organisation des réunions) */
   @Post()
+  @Roles('SECRETARY')
   async createMeeting(
     @Param('associationId') associationId: string,
     @Body() dto: CreateMeetingDto,
+    @Request() req?: any,
   ) {
     const meeting = await this.createMeetingUseCase.execute({
       ...dto,
-      associationId,
+      associationId: req?.resolvedAssociationId || associationId,
     });
     return meeting.toJSON();
   }
 
+  /** POST /meetings/:id/attendance — SECRETARY + CENSOR + PRESIDENT (saisie présences) */
   @Post(':meetingId/attendance')
+  @Roles('SECRETARY', 'CENSOR')
   async recordAttendance(
     @Param('meetingId') meetingId: string,
     @Body() dto: RecordAttendanceDto,
@@ -116,7 +127,9 @@ export class MeetingsController {
     });
   }
 
+  /** POST /meetings/:id/minutes — SECRETARY + PRESIDENT (rédaction PV) */
   @Post(':meetingId/minutes')
+  @Roles('SECRETARY')
   async saveMinutes(
     @Param('meetingId') meetingId: string,
     @Body() dto: SaveMinutesDto,

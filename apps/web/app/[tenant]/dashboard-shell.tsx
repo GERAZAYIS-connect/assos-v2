@@ -38,6 +38,19 @@ export default function DashboardShell({ children }: DashboardShellProps) {
     { icon: 'folder_open', label: 'Documents', href: `/${tenantSlug}/documents` },
   ];
 
+  const visibleNavItems = navItems.filter((item) => {
+    if (item.href.endsWith('/members')) {
+      return ['PRESIDENT', 'TREASURER', 'SECRETARY', 'CENSOR'].includes(userRole);
+    }
+    if (item.href.endsWith('/treasury')) {
+      return ['PRESIDENT', 'TREASURER'].includes(userRole);
+    }
+    if (item.href.endsWith('/budget')) {
+      return ['PRESIDENT', 'TREASURER'].includes(userRole);
+    }
+    return true;
+  });
+
   React.useEffect(() => {
     if (tenantSlug) {
       fetchNotifications();
@@ -212,7 +225,7 @@ export default function DashboardShell({ children }: DashboardShellProps) {
             </div>
 
             <nav className={styles.drawerNav}>
-              {navItems.map((item) => (
+              {visibleNavItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
@@ -236,7 +249,7 @@ export default function DashboardShell({ children }: DashboardShellProps) {
         </div>
 
         <nav className={styles.sidebarNav}>
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -248,12 +261,14 @@ export default function DashboardShell({ children }: DashboardShellProps) {
           ))}
         </nav>
 
-        <div className={styles.sidebarFooter}>
-          <Link href={`/${tenantSlug}/settings`} className={styles.navItem}>
-            <span className="material-symbols-rounded">settings</span>
-            <span>Paramètres</span>
-          </Link>
-        </div>
+        {userRole === 'PRESIDENT' && (
+          <div className={styles.sidebarFooter}>
+            <Link href={`/${tenantSlug}/settings`} className={styles.navItem}>
+              <span className="material-symbols-rounded">settings</span>
+              <span>Paramètres</span>
+            </Link>
+          </div>
+        )}
       </aside>
 
       {/* Main Content View */}
@@ -306,7 +321,7 @@ export default function DashboardShell({ children }: DashboardShellProps) {
 
         {/* Mobile Bottom Navigation Bar */}
         <nav className={styles.mobileBottomNav}>
-          {navItems.slice(0, 5).map((item) => (
+          {visibleNavItems.slice(0, 5).map((item) => (
             <Link
               key={item.href}
               href={item.href}

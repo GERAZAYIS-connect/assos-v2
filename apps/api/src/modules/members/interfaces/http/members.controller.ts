@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
   Request,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
@@ -25,6 +26,8 @@ import { UpdateMemberProfileUseCase } from '../../application/use-cases/update-m
 import { ValidateJoiningFeeUseCase } from '../../application/use-cases/validate-joining-fee.use-case';
 import { AddMemberManuallyUseCase } from '../../application/use-cases/add-member-manually.use-case';
 import { AssociationRole, MemberStatus } from '@prisma/client';
+import { AssociationRoleGuard } from '../../../../common/guards/association-role.guard';
+import { Roles } from '../../../../common/decorators/roles.decorator';
 
 @ApiTags('Members')
 @Controller({ version: '1' })
@@ -44,41 +47,75 @@ export class MembersController {
     private readonly addMemberManuallyUseCase: AddMemberManuallyUseCase,
   ) {}
 
-  // ─── Members ───────────────────────────────────────────────────────────────
+  // ─── Members ────────────────────────────────────────────────────────────────
 
+  /**
+   * GET /associations/:associationId/members
+   * Tout le bureau + Trésorier peuvent voir la liste.
+   * MEMBER simple → interdit (il peut uniquement voir son propre détail).
+   */
   @Get('associations/:associationId/members')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
+  @Roles('TREASURER', 'SECRETARY', 'CENSOR')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'List all members of an association' })
+  @ApiOperation({ summary: 'List all members (Bureau roles only)' })
   async listMembers(
     @Param('associationId') associationId: string,
     @Query('status') status?: MemberStatus,
     @Query('role') role?: AssociationRole,
     @Query('search') search?: string,
+    @Request() req?: any,
   ) {
-    return this.listMembersUseCase.execute({ associationId, status, role, search });
+    return this.listMembersUseCase.execute({
+      associationId: req?.resolvedAssociationId || associationId,
+      status,
+      role,
+      search,
+    });
   }
 
+  /**
+   * GET /associations/:associationId/members/:memberId
+   * PRESIDENT / SECRETARY → voir n'importe quel membre.
+   * TREASURER / CENSOR → voir n'importe quel membre.
+   * MEMBER → uniquement son propre profil.
+   */
   @Get('associations/:associationId/members/:memberId')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
+  @Roles() // Autorisé à tous, mais filtré en logique
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get detailed info & interaction history for a member' })
+  @ApiOperation({ summary: 'Get member details (own profile for MEMBER role)' })
   async getMemberDetails(
     @Param('associationId') associationId: string,
     @Param('memberId') memberId: string,
     @Request() req: any,
   ) {
+    const membership = req.membership;
+
+    // MEMBER ne peut voir que son propre profil
+    if (membership?.role === 'MEMBER' && membership.id !== memberId) {
+      throw new ForbiddenException(
+        'Vous ne pouvez consulter que votre propre profil. Contactez la Secrétaire pour les informations d\'autres membres.',
+      );
+    }
+
     return this.getMemberDetailsUseCase.execute({
-      associationId,
+      associationId: req.resolvedAssociationId || associationId,
       actorUserId: req.user.sub,
       targetMemberId: memberId,
     });
   }
 
+  /**
+   * PATCH /associations/:associationId/members/:memberId/profile
+   * SECRETARY + PRESIDENT uniquement.
+   * MEMBER → 403 explicite avec message d'orientation.
+   */
   @Patch('associations/:associationId/members/:memberId/profile')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
+  @Roles('SECRETARY')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update member profile details (Self or President/Secretary)' })
+  @ApiOperation({ summary: 'Update member profile (Secretary or President only)' })
   async updateProfile(
     @Param('associationId') associationId: string,
     @Param('memberId') memberId: string,
@@ -86,26 +123,31 @@ export class MembersController {
     @Body() profileData: any,
   ) {
     return this.updateMemberProfileUseCase.execute({
-      associationId,
+      associationId: req.resolvedAssociationId || associationId,
       actorUserId: req.user.sub,
       targetMemberId: memberId,
       profileData,
     });
   }
 
-  // ─── Invitations ───────────────────────────────────────────────────────────
+  // ─── Invitations ────────────────────────────────────────────────────────────
 
+  /**
+   * POST /associations/:associationId/members/invite
+   * SECRETARY + PRESIDENT
+   */
   @Post('associations/:associationId/members/invite')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
+  @Roles('SECRETARY')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Invite a new member via email or phone' })
+  @ApiOperation({ summary: 'Invite a new member (Secretary or President only)' })
   async inviteMember(
     @Param('associationId') associationId: string,
     @Request() req: any,
     @Body() body: { email?: string; phone?: string; role?: AssociationRole },
   ) {
     return this.inviteMemberUseCase.execute({
-      associationId,
+      associationId: req.resolvedAssociationId || associationId,
       invitedByUserId: req.user.sub,
       email: body.email,
       phone: body.phone,
@@ -113,17 +155,22 @@ export class MembersController {
     });
   }
 
+  /**
+   * POST /associations/:associationId/members/manual
+   * SECRETARY + PRESIDENT uniquement
+   */
   @Post('associations/:associationId/members/manual')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
+  @Roles('SECRETARY')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Add a new member manually (President/Secretary only)' })
+  @ApiOperation({ summary: 'Add member manually (Secretary or President only)' })
   async addMemberManually(
     @Param('associationId') associationId: string,
     @Request() req: any,
     @Body() body: { firstName: string; lastName: string; email?: string; phone?: string; role?: AssociationRole },
   ) {
     return this.addMemberManuallyUseCase.execute({
-      associationId,
+      associationId: req.resolvedAssociationId || associationId,
       actorUserId: req.user.sub,
       firstName: body.firstName,
       lastName: body.lastName,
@@ -133,8 +180,10 @@ export class MembersController {
     });
   }
 
+  // Routes publiques d'invitation (pas de guard d'association requis)
+
   @Get('invitations/:token')
-  @ApiOperation({ summary: 'Inspect an invitation token details (Public)' })
+  @ApiOperation({ summary: 'Inspect an invitation token (Public)' })
   async getInvitationDetails(@Param('token') token: string) {
     return this.acceptInvitationUseCase.getInvitationDetails(token);
   }
@@ -142,7 +191,7 @@ export class MembersController {
   @Post('invitations/:token/accept')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Accept invitation and join association (Logged in user)' })
+  @ApiOperation({ summary: 'Accept invitation and join association' })
   async acceptInvitation(@Param('token') token: string, @Request() req: any) {
     return this.acceptInvitationUseCase.execute({
       token,
@@ -150,10 +199,15 @@ export class MembersController {
     });
   }
 
-  // ─── Member Status ─────────────────────────────────────────────────────────
+  // ─── Member Status ──────────────────────────────────────────────────────────
 
+  /**
+   * PATCH /members/:memberId/status
+   * PRESIDENT uniquement (AssociationRoleGuard avec PRESIDENT implicite)
+   */
   @Patch('associations/:associationId/members/:memberId/status')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
+  @Roles('PRESIDENT') // Le guard autorise PRESIDENT par défaut
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update member status or role (President only)' })
   async updateStatus(
@@ -163,7 +217,7 @@ export class MembersController {
     @Body() body: { status: MemberStatus; role?: AssociationRole },
   ) {
     return this.updateMemberStatusUseCase.execute({
-      associationId,
+      associationId: req.resolvedAssociationId || associationId,
       actorUserId: req.user.sub,
       targetMemberId: memberId,
       status: body.status,
@@ -171,43 +225,48 @@ export class MembersController {
     });
   }
 
-  // ─── Joining Fee ───────────────────────────────────────────────────────────
+  // ─── Joining Fee ────────────────────────────────────────────────────────────
 
+  /**
+   * POST /members/:memberId/joining-fee
+   * PRESIDENT + TREASURER
+   */
   @Post('associations/:associationId/members/:memberId/joining-fee')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
+  @Roles('TREASURER')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Validate joining fee payment for a member (President/Treasurer only)' })
+  @ApiOperation({ summary: 'Validate joining fee (President or Treasurer)' })
   async validateJoiningFee(
     @Param('associationId') associationId: string,
     @Param('memberId') memberId: string,
     @Request() req: any,
   ) {
     return this.validateJoiningFeeUseCase.execute({
-      associationId,
+      associationId: req.resolvedAssociationId || associationId,
       memberUserId: memberId,
       validatedByUserId: req.user.sub,
     });
   }
 
-  // ─── Proxy / Procuration ───────────────────────────────────────────────────
+  // ─── Proxy / Procuration ────────────────────────────────────────────────────
 
+  /**
+   * PATCH /members/:memberId/proxy
+   * SECRETARY + PRESIDENT (la procuration est un acte administratif)
+   */
   @Patch('associations/:associationId/members/:memberId/proxy')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
+  @Roles('SECRETARY')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Assign or update a proxy (mandataire) for a member' })
+  @ApiOperation({ summary: 'Assign proxy for a member (Secretary or President)' })
   async assignProxy(
     @Param('associationId') associationId: string,
     @Param('memberId') memberId: string,
-    @Body()
-    body: {
-      proxyName?: string;
-      proxyPhone?: string;
-      proxyNotes?: string;
-      expiresAt?: string;
-    },
+    @Request() req: any,
+    @Body() body: { proxyName?: string; proxyPhone?: string; proxyNotes?: string; expiresAt?: string },
   ) {
     return this.assignProxyUseCase.execute({
-      associationId,
+      associationId: req.resolvedAssociationId || associationId,
       memberId,
       proxyName: body.proxyName,
       proxyPhone: body.proxyPhone,
@@ -217,56 +276,80 @@ export class MembersController {
   }
 
   @Delete('associations/:associationId/members/:memberId/proxy')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
+  @Roles('SECRETARY')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Revoke the active proxy for a member' })
+  @ApiOperation({ summary: 'Revoke proxy (Secretary or President)' })
   async revokeProxy(
     @Param('associationId') associationId: string,
     @Param('memberId') memberId: string,
+    @Request() req: any,
   ) {
-    return this.revokeProxyUseCase.execute({ associationId, memberId });
+    return this.revokeProxyUseCase.execute({
+      associationId: req.resolvedAssociationId || associationId,
+      memberId,
+    });
   }
 
-  // ─── Certificates / Attestations ───────────────────────────────────────────
+  // ─── Certificates ───────────────────────────────────────────────────────────
 
+  /**
+   * POST /members/:memberId/certificate
+   * SECRETARY + PRESIDENT (acte administratif)
+   */
   @Post('associations/:associationId/members/:memberId/certificate')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
+  @Roles('SECRETARY')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Generate member certificate of good standing (QR Token, 1 year)' })
+  @ApiOperation({ summary: 'Generate member certificate (Secretary or President)' })
   async generateCertificate(
     @Param('associationId') associationId: string,
     @Param('memberId') memberId: string,
     @Request() req: any,
   ) {
-    // associationId peut être un slug — on passe les deux
     return this.generateCertificateUseCase.execute({
-      associationId,
+      associationId: req.resolvedAssociationId || associationId,
       memberId,
       associationSlug: associationId,
     });
   }
 
+  /**
+   * GET /members/:memberId/certificates
+   * Tout membre actif peut voir ses propres certificats, bureau peut voir tous.
+   */
   @Get('associations/:associationId/members/:memberId/certificates')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
+  @Roles()
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'List all certificates issued for a member' })
+  @ApiOperation({ summary: 'List certificates for a member' })
   async listCertificates(
     @Param('associationId') associationId: string,
     @Param('memberId') memberId: string,
+    @Request() req: any,
   ) {
-    return this.generateCertificateUseCase.listByMember(memberId, associationId);
+    const membership = req.membership;
+    // MEMBER ne peut voir que ses propres certificats
+    if (membership?.role === 'MEMBER' && membership.id !== memberId) {
+      throw new ForbiddenException('Vous ne pouvez consulter que vos propres certificats.');
+    }
+    return this.generateCertificateUseCase.listByMember(
+      memberId,
+      req.resolvedAssociationId || associationId,
+    );
   }
 
   @Get('certificates/verify/:token')
-  @ApiOperation({ summary: 'Public endpoint to verify a member certificate' })
+  @ApiOperation({ summary: 'Public: verify a member certificate' })
   async verifyCertificate(@Param('token') token: string) {
     return this.generateCertificateUseCase.verify(token);
   }
 
   @Patch('associations/:associationId/certificates/:certificateId/revoke')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
+  @Roles('SECRETARY')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Invalidate/Revoke a certificate (President & Secretary only)' })
+  @ApiOperation({ summary: 'Revoke a certificate (Secretary or President)' })
   async revokeCertificate(
     @Param('associationId') associationId: string,
     @Param('certificateId') certificateId: string,
@@ -274,7 +357,7 @@ export class MembersController {
     @Body() body: { reason?: string },
   ) {
     return this.revokeCertificateUseCase.execute({
-      associationId,
+      associationId: req.resolvedAssociationId || associationId,
       certificateId,
       actorUserId: req.user.sub,
       reason: body.reason,

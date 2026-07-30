@@ -1,4 +1,14 @@
-import { Body, Controller, Post, Get, Param, Query, UseGuards, Request } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Get,
+  Param,
+  Query,
+  UseGuards,
+  Request,
+  ForbiddenException,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { IsString, IsNotEmpty, IsNumber, Min, IsOptional, IsEnum } from 'class-validator';
 import { IssueSanctionUseCase } from '../../application/use-cases/issue-sanction.use-case';
@@ -7,6 +17,8 @@ import { CancelSanctionUseCase } from '../../application/use-cases/cancel-sancti
 import { ListSanctionsUseCase } from '../../application/use-cases/list-sanctions.use-case';
 import { CheckOverdueSanctionsUseCase } from '../../application/use-cases/check-overdue-sanctions.use-case';
 import { SanctionStatus, SanctionSeverity } from '@prisma/client';
+import { AssociationRoleGuard } from '../../../../common/guards/association-role.guard';
+import { Roles } from '../../../../common/decorators/roles.decorator';
 
 class IssueSanctionDto {
   @IsString()
@@ -43,7 +55,7 @@ class CancelSanctionDto {
 }
 
 @Controller('associations/:associationId/sanctions')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
 export class SanctionsController {
   constructor(
     private readonly issueSanctionUseCase: IssueSanctionUseCase,
@@ -53,15 +65,34 @@ export class SanctionsController {
     private readonly checkOverdueSanctionsUseCase: CheckOverdueSanctionsUseCase,
   ) {}
 
+  /**
+   * GET /sanctions
+   * PRESIDENT / TREASURER / SECRETARY / CENSOR → toutes les sanctions.
+   * MEMBER → uniquement ses propres sanctions.
+   */
   @Get()
+  @Roles() // Tous les membres actifs autorisés
   async listSanctions(
     @Param('associationId') associationId: string,
     @Query('status') status?: SanctionStatus,
+    @Request() req?: any,
   ) {
-    return this.listSanctionsUseCase.execute({ associationId, status });
+    const membership = req?.membership;
+    const memberId = membership?.role === 'MEMBER' ? membership.id : undefined;
+
+    return this.listSanctionsUseCase.execute({
+      associationId: req?.resolvedAssociationId || associationId,
+      status,
+      memberId, // Undefined pour le bureau → tous, renseigné pour MEMBER → seulement les siennes
+    });
   }
 
+  /**
+   * POST /sanctions/check-overdue
+   * CENSOR + PRESIDENT (discipline)
+   */
   @Post('check-overdue')
+  @Roles('CENSOR', 'TREASURER')
   async checkOverdue(
     @Param('associationId') associationId: string,
     @Query('thresholdDays') thresholdDays?: string,
@@ -71,42 +102,57 @@ export class SanctionsController {
     });
   }
 
+  /**
+   * POST /sanctions/issue
+   * CENSOR + PRESIDENT uniquement (pouvoir disciplinaire)
+   */
   @Post('issue')
+  @Roles('CENSOR')
   async issueSanction(
     @Param('associationId') associationId: string,
     @Body() dto: IssueSanctionDto,
     @Request() req: any,
   ) {
-    const userId = req.user?.id;
     const sanction = await this.issueSanctionUseCase.execute({
       ...dto,
-      associationId,
-      issuedByUserId: userId,
+      associationId: req.resolvedAssociationId || associationId,
+      issuedByUserId: req.user?.id,
     });
     return sanction.toJSON();
   }
 
+  /**
+   * POST /sanctions/:id/pay
+   * TREASURER + PRESIDENT (acte financier)
+   */
   @Post(':sanctionId/pay')
+  @Roles('TREASURER')
   async paySanction(
     @Param('associationId') associationId: string,
     @Param('sanctionId') sanctionId: string,
     @Body() dto: PaySanctionDto,
     @Request() req: any,
   ) {
-    const userId = req.user?.id;
     const sanction = await this.paySanctionUseCase.execute({
       sanctionId,
-      associationId,
+      associationId: req.resolvedAssociationId || associationId,
       caisseId: dto.caisseId,
-      paidByUserId: userId,
+      paidByUserId: req.user?.id,
     });
     return sanction.toJSON();
   }
 
+  /**
+   * POST /sanctions/:id/cancel
+   * CENSOR + PRESIDENT uniquement (pouvoir disciplinaire)
+   */
   @Post(':sanctionId/cancel')
+  @Roles('CENSOR')
   async cancelSanction(
+    @Param('associationId') associationId: string,
     @Param('sanctionId') sanctionId: string,
     @Body() dto: CancelSanctionDto,
+    @Request() req: any,
   ) {
     const sanction = await this.cancelSanctionUseCase.execute({
       sanctionId,

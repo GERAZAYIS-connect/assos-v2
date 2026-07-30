@@ -6,6 +6,7 @@ import { PrismaService } from '../../../../core/prisma/prisma.service';
 export interface ListSanctionsQuery {
   associationId: string;
   status?: SanctionStatus;
+  memberId?: string;
 }
 
 @Injectable()
@@ -21,6 +22,7 @@ export class ListSanctionsUseCase {
 
     const where: any = { associationId: assocId };
     if (query.status) where.status = query.status;
+    if (query.memberId) where.memberId = query.memberId;
 
     const sanctions = await this.prisma.sanction.findMany({
       where,

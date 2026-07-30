@@ -700,7 +700,7 @@ export default function SuperAdminPage() {
                 ) : (
                   <ResponsiveContainer width="100%" height={250}>
                     <PieChart>
-                      <Pie data={saasMetrics.countryDistribution} dataKey="count" nameKey="country" cx="50%" cy="50%" outerRadius={100} label={({ country, percent }) => `${country} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
+                      <Pie data={saasMetrics.countryDistribution} dataKey="count" nameKey="country" cx="50%" cy="50%" outerRadius={100} label={(props: any) => `${props.name || props.country || ''} ${((props.percent || 0) * 100).toFixed(0)}%`} labelLine={false}>
                         {saasMetrics.countryDistribution.map((_, i) => (
                           <Cell key={i} fill={`hsl(${i * 45}, 20%, ${20 + i * 8}%)`} />
                         ))}

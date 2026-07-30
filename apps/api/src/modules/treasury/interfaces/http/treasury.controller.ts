@@ -8,6 +8,8 @@ import { TransferFundsUseCase } from '../../application/use-cases/transfer-funds
 import { GetTransactionUseCase } from '../../application/use-cases/get-transaction.use-case';
 import { ListTransactionsUseCase } from '../../application/use-cases/list-transactions.use-case';
 import { CaisseType, TransactionType } from '@prisma/client';
+import { AssociationRoleGuard } from '../../../../common/guards/association-role.guard';
+import { Roles } from '../../../../common/decorators/roles.decorator';
 
 class CreateCaisseDto {
   @IsEnum(CaisseType)
@@ -67,7 +69,7 @@ class TransferFundsDto {
 }
 
 @Controller('associations/:associationId/treasury')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), AssociationRoleGuard)
 export class TreasuryController {
   constructor(
     private readonly createCaisseUseCase: CreateCaisseUseCase,
@@ -78,44 +80,57 @@ export class TreasuryController {
     private readonly listTransactionsUseCase: ListTransactionsUseCase,
   ) {}
 
+  /** GET caisses — TREASURER + PRESIDENT (lecture) */
   @Get('caisses')
-  async getCaisses(@Param('associationId') associationId: string) {
-    const caisses = await this.getCaissesUseCase.execute(associationId);
+  @Roles('TREASURER')
+  async getCaisses(@Param('associationId') associationId: string, @Request() req: any) {
+    const caisses = await this.getCaissesUseCase.execute(req.resolvedAssociationId || associationId);
     return caisses.map(c => c.toJSON());
   }
 
+  /** GET transactions — TREASURER + PRESIDENT */
   @Get('transactions')
+  @Roles('TREASURER')
   async listTransactions(
     @Param('associationId') associationId: string,
     @Query('caisseId') caisseId?: string,
     @Query('type') type?: TransactionType,
+    @Request() req?: any,
   ) {
-    return this.listTransactionsUseCase.execute({ associationId, caisseId, type });
+    return this.listTransactionsUseCase.execute({
+      associationId: req?.resolvedAssociationId || associationId,
+      caisseId,
+      type,
+    });
   }
 
+  /** POST caisses — TREASURER + PRESIDENT uniquement */
   @Post('caisses')
+  @Roles('TREASURER')
   async createCaisse(
     @Param('associationId') associationId: string,
     @Body() dto: CreateCaisseDto,
+    @Request() req?: any,
   ) {
     const caisse = await this.createCaisseUseCase.execute({
       ...dto,
-      associationId,
+      associationId: req?.resolvedAssociationId || associationId,
     });
     return caisse.toJSON();
   }
 
+  /** POST transactions — TREASURER + PRESIDENT uniquement */
   @Post('transactions')
+  @Roles('TREASURER')
   async recordTransaction(
     @Param('associationId') associationId: string,
     @Body() dto: RecordTransactionDto,
-    @Request() req: any
+    @Request() req: any,
   ) {
-    const userId = req.user?.id; // Assumes req.user is set by auth guard
     const transaction = await this.recordTransactionUseCase.execute({
       ...dto,
-      associationId,
-      createdByUserId: userId,
+      associationId: req.resolvedAssociationId || associationId,
+      createdByUserId: req.user?.id,
     });
     return transaction.toJSON();
   }
