@@ -370,7 +370,7 @@ export default function SanctionsPage() {
                       </span>
                     </td>
                     <td>
-                      <strong>{sanction.fineAmount.toLocaleString('fr-FR')} XAF</strong>
+                      <strong>{(sanction.fineAmount || 0).toLocaleString('fr-FR')} XAF</strong>
                     </td>
                     <td>
                       <span className={`${styles.statusBadge} ${styles[`status_${sanction.status}`]}`}>
@@ -507,7 +507,7 @@ export default function SanctionsPage() {
             {payError && <div className={styles.alertError}>{payError}</div>}
 
             <p style={{ fontSize: '0.9rem', color: '#444', marginBottom: '1rem' }}>
-              Paiement de l'amende : <strong>{selectedSanction.fineAmount.toLocaleString('fr-FR')} XAF</strong> pour "{selectedSanction.title}".
+              Paiement de l'amende : <strong>{(selectedSanction.fineAmount || 0).toLocaleString('fr-FR')} XAF</strong> pour "{selectedSanction.title}".
             </p>
 
             <form onSubmit={handlePaySubmit} className={styles.form}>

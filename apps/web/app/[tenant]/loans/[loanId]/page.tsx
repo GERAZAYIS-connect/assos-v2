@@ -338,7 +338,7 @@ export default function LoanDetailPage() {
         <div className={styles.progressHeader}>
           <span>Avancement du remboursement ({progressPercent}%)</span>
           <span>
-            {repaidAmount.toLocaleString('fr-FR')} XAF / {loan.totalToRepay.toLocaleString('fr-FR')} XAF
+          {((repaidAmount || 0)).toLocaleString('fr-FR')} XAF / {((loan.totalToRepay || 0)).toLocaleString('fr-FR')} XAF
           </span>
         </div>
         <div className={styles.progressBarTrack}>
@@ -368,7 +368,7 @@ export default function LoanDetailPage() {
                     <tr key={r.id}>
                       <td>{new Date(r.paidAt).toLocaleDateString('fr-FR')}</td>
                       <td>
-                        <strong>+{r.amount.toLocaleString('fr-FR')} XAF</strong>
+                        <strong>+{((r.amount || 0)).toLocaleString('fr-FR')} XAF</strong>
                       </td>
                       <td>{r.notes || 'Remboursement prêt'}</td>
                     </tr>
@@ -385,7 +385,7 @@ export default function LoanDetailPage() {
             <h2>Détails du Contrat</h2>
             <div className={styles.infoRow}>
               <span className={styles.infoLabel}>Capital initial</span>
-              <span className={styles.infoValue}>{loan.amount.toLocaleString('fr-FR')} XAF</span>
+               <span className={styles.infoValue}>{((loan.amount || 0)).toLocaleString('fr-FR')} XAF</span>
             </div>
             <div className={styles.infoRow}>
               <span className={styles.infoLabel}>Taux d'intérêt</span>
@@ -393,11 +393,11 @@ export default function LoanDetailPage() {
             </div>
             <div className={styles.infoRow}>
               <span className={styles.infoLabel}>Total à rembourser</span>
-              <span className={styles.infoValue}>{loan.totalToRepay.toLocaleString('fr-FR')} XAF</span>
+               <span className={styles.infoValue}>{((loan.totalToRepay || 0)).toLocaleString('fr-FR')} XAF</span>
             </div>
             <div className={styles.infoRow}>
               <span className={styles.infoLabel}>Reste dû</span>
-              <span className={styles.infoValue}>{loan.balanceRemaining.toLocaleString('fr-FR')} XAF</span>
+               <span className={styles.infoValue}>{((loan.balanceRemaining || 0)).toLocaleString('fr-FR')} XAF</span>
             </div>
             <div className={styles.infoRow}>
               <span className={styles.infoLabel}>Caisse source</span>

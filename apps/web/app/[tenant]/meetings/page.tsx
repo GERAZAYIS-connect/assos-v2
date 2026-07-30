@@ -227,7 +227,7 @@ export default function MeetingsPage() {
                   )}
                   {m.autoSanctionAbsence && (
                     <p className={styles.detail}>
-                      <strong>Amende absence :</strong> {m.absenceFineAmount.toLocaleString('fr-FR')} XAF
+                      <strong>Amende absence :</strong> {(m.absenceFineAmount || 0).toLocaleString('fr-FR')} XAF
                     </p>
                   )}
                   <p className={styles.detail}>

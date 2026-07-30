@@ -308,7 +308,7 @@ export default function TontineDetailPage() {
                     )}
                     {isPastRound && (
                       <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#000' }}>
-                        Gagnant : {beneficiaryName} ({round.potAmount.toLocaleString('fr-FR')} XAF)
+                        Gagnant : {beneficiaryName} ({(round.potAmount || 0).toLocaleString('fr-FR')} XAF)
                       </div>
                     )}
                   </div>

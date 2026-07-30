@@ -73,9 +73,21 @@ const AUDIT_CATEGORY_COLORS: Record<string, string> = {
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-const fmt = (n: number) => n.toLocaleString('fr-FR');
-const fmtDate = (d: string | null) => d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
-const fmtDateTime = (d: string) => new Date(d).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+const fmt = (n: any) => {
+  if (n === null || n === undefined) return '0';
+  const val = Number(n);
+  return isNaN(val) ? '0' : val.toLocaleString('fr-FR');
+};
+const fmtDate = (d: string | null | undefined) => {
+  if (!d) return '—';
+  const date = new Date(d);
+  return isNaN(date.getTime()) ? '—' : date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+};
+const fmtDateTime = (d: string | null | undefined) => {
+  if (!d) return '—';
+  const date = new Date(d);
+  return isNaN(date.getTime()) ? '—' : date.toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+};
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   ACTIVE: { label: 'Actif', color: '#15803d', bg: '#f0fdf4' },

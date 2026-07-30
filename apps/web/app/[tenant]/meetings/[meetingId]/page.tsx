@@ -201,7 +201,7 @@ export default function MeetingDetailPage() {
           </p>
           {meeting.autoSanctionAbsence && (
             <div style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#ffffff', fontWeight: 500 }}>
-              ⚠️ Amende automatique d'absence non excusée : <strong>{meeting.absenceFineAmount.toLocaleString('fr-FR')} XAF</strong>
+              ⚠️ Amende automatique d'absence non excusée : <strong>{(meeting.absenceFineAmount || 0).toLocaleString('fr-FR')} XAF</strong>
             </div>
           )}
         </div>

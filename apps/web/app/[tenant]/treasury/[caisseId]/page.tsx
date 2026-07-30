@@ -341,9 +341,9 @@ export default function CaisseDetailsPage() {
                     </select>
                   </div>
 
-                  {selectedMemberId && memberBalance !== null && (
+                  {selectedMemberId && memberBalance !== null && memberBalance !== undefined && (
                     <div className={styles.memberBalanceInfo}>
-                      Solde actuel du membre : <strong>{memberBalance.toLocaleString('fr-FR')} XAF</strong>
+                      Solde actuel du membre : <strong>{(memberBalance || 0).toLocaleString('fr-FR')} XAF</strong>
                     </div>
                   )}
 
