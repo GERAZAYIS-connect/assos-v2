@@ -34,6 +34,7 @@ export class SubscriptionGuard implements CanActivate {
         subscriptionStatus: true,
         trialEndsAt: true,
         subscriptionEndsAt: true,
+        isActive: true,
       },
     });
 
@@ -42,6 +43,16 @@ export class SubscriptionGuard implements CanActivate {
     }
 
     const now = new Date();
+
+    // 0. Cas d'une association suspendue par la plateforme
+    if (!association.isActive) {
+      if (request.method !== 'GET') {
+        throw new HttpException(
+          `L'association "${association.name}" a été suspendue par la plateforme. Veuillez contacter le support.`,
+          HttpStatus.FORBIDDEN,
+        );
+      }
+    }
 
     // 1. Cas d'une association en période d'essai (TRIALING / DISCOVERY)
     if (association.subscriptionStatus === 'TRIALING' || association.plan === 'DISCOVERY') {

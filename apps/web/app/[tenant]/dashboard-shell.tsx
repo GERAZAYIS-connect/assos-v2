@@ -264,7 +264,19 @@ export default function DashboardShell({ children }: DashboardShellProps) {
 
           return (
             <>
-              {association && isExpired && userRole === 'MEMBER' ? (
+              {association && !association.isActive ? (
+                <div style={{
+                  position: 'absolute', inset: 0, zIndex: 9999, backgroundColor: '#f8fafc',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  textAlign: 'center', padding: '2rem'
+                }}>
+                  <span className="material-symbols-rounded" style={{ fontSize: '4rem', color: '#ef4444', marginBottom: '1rem' }}>block</span>
+                  <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.5rem' }}>Association Suspendue</h2>
+                  <p style={{ color: '#64748b', maxWidth: 400 }}>
+                    Cette association a été suspendue par l'administration de la plateforme. Veuillez contacter le support.
+                  </p>
+                </div>
+              ) : association && isExpired && userRole === 'MEMBER' ? (
                 <div style={{
                   position: 'absolute', inset: 0, zIndex: 9999, backgroundColor: '#f8fafc',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
