@@ -2,7 +2,7 @@ import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AdminService } from '../../application/services/admin.service';
-import { PlatformAdminGuard } from '../common/guards/platform-admin.guard';
+import { PlatformAdminGuard } from '../../common/guards/platform-admin.guard';
 
 @ApiTags('admin')
 @Controller({ path: 'admin', version: '1' })
