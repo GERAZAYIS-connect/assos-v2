@@ -25,8 +25,8 @@ export class SubscriptionGuard implements CanActivate {
       return true;
     }
 
-    const association = await this.prisma.association.findUnique({
-      where: { id: associationId },
+    const association = await this.prisma.association.findFirst({
+      where: { OR: [{ id: associationId }, { slug: associationId }] },
       select: {
         id: true,
         name: true,
@@ -46,7 +46,15 @@ export class SubscriptionGuard implements CanActivate {
 
     // 0. Cas d'une association suspendue par la plateforme
     if (!association.isActive) {
-      if (request.method !== 'GET') {
+      // Autoriser uniquement le chargement des détails de l'association elle-même (GET /associations/:id)
+      // afin que le dashboard-shell puisse afficher proprement l'écran de suspension.
+      const isGetDetails = request.method === 'GET' && (
+        request.url.endsWith(`/associations/${associationId}`) ||
+        request.url.includes(`/associations/${associationId}?`) ||
+        request.url.includes('/associations/mine')
+      );
+
+      if (!isGetDetails) {
         throw new HttpException(
           `L'association "${association.name}" a été suspendue par la plateforme. Veuillez contacter le support.`,
           HttpStatus.FORBIDDEN,

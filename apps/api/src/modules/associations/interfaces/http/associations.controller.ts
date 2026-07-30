@@ -7,7 +7,9 @@ import {
   Request,
   Patch,
   Param,
+  NotFoundException,
 } from '@nestjs/common';
+import { PrismaService } from '../../../../core/prisma/prisma.service';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateAssociationUseCase } from '../../application/use-cases/create-association.use-case';
@@ -27,6 +29,7 @@ export class AssociationsController {
     private readonly updateAssocUseCase: UpdateAssociationUseCase,
     private readonly exportAssocDataUseCase: ExportAssociationDataUseCase,
     @Inject(ASSOCIATION_REPOSITORY) private readonly assocRepo: IAssociationRepository,
+    private readonly prisma: PrismaService,
   ) {}
 
   // ─── Public endpoint: no auth required ───────────────────────────────────
@@ -71,6 +74,20 @@ export class AssociationsController {
   async checkSlug(@Request() req: { params: { slug: string } }) {
     const exists = await this.assocRepo.slugExists(req.params.slug);
     return { available: !exists };
+  }
+
+  @Get(':id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get association details by ID or slug' })
+  async findOne(@Param('id') id: string) {
+    const association = await this.prisma.association.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+    });
+    if (!association) {
+      throw new NotFoundException('Association introuvable');
+    }
+    return association;
   }
 
   @Patch(':id')
