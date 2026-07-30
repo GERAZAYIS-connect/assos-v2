@@ -136,13 +136,18 @@ export default function SuperAdminPage() {
         }
       } catch {}
 
-      if (currentUserEmail && currentUserEmail.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase()) {
-        const allowed = [SUPER_ADMIN_EMAIL.toLowerCase(), ...coAdmins.map(c => c.email.toLowerCase())];
-        if (!allowed.includes(currentUserEmail.toLowerCase())) {
-          alert(`Accès Refusé : Le compte ${currentUserEmail} n'est pas autorisé à accéder au backoffice Super-Admin.`);
-          window.location.href = '/login';
-          return;
-        }
+      // ENFORCE STRICT CHECK
+      if (!currentUserEmail) {
+        alert("Accès Refusé : Vous devez être connecté pour accéder à cette page.");
+        window.location.href = '/login?redirect=/admin';
+        return;
+      }
+
+      const allowed = [SUPER_ADMIN_EMAIL.toLowerCase(), ...coAdmins.map(c => c.email.toLowerCase())];
+      if (!allowed.includes(currentUserEmail.toLowerCase())) {
+        alert(`Accès Refusé : Le compte ${currentUserEmail} n'est pas autorisé à accéder au backoffice Super-Admin.`);
+        window.location.href = '/login';
+        return;
       }
 
       fetchAdminData();
