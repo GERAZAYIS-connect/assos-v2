@@ -35,6 +35,33 @@ export class AdminService {
     });
     const totalVolume = totalVolumeResult._sum.amount || 0;
 
+    // Get registration history for the last 6 months
+    const associationsWithDates = await this.prisma.association.findMany({
+      select: { createdAt: true },
+    });
+
+    const historyMap = new Map<string, number>();
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat('fr-FR', { month: 'short', year: '2-digit' });
+    
+    // Initialize last 6 months with 0
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      historyMap.set(formatter.format(d), 0);
+    }
+
+    associationsWithDates.forEach(assoc => {
+      const label = formatter.format(assoc.createdAt);
+      if (historyMap.has(label)) {
+        historyMap.set(label, historyMap.get(label)! + 1);
+      }
+    });
+
+    const registrationHistory = Array.from(historyMap.entries()).map(([name, total]) => ({
+      name: name.charAt(0).toUpperCase() + name.slice(1),
+      total
+    }));
+
     return {
       primaryAdmin: {
         email: 'gerazayisti@gmail.com', // Replace dynamically if needed
@@ -55,6 +82,7 @@ export class AdminService {
         uptime: '99.9%', // Mock
         auditLogsCount,
       },
+      registrationHistory
     };
   }
 

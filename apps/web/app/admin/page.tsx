@@ -2,6 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 
 interface PlatformStats {
   primaryAdmin: {
@@ -23,14 +32,7 @@ interface PlatformStats {
     uptime: string;
     auditLogsCount: number;
   };
-}
-
-interface Completeness {
-  isComplete: boolean;
-  completedCount: number;
-  totalRequired: number;
-  percentage: number;
-  missingFields: string[];
+  registrationHistory: { name: string; total: number }[];
 }
 
 interface HostedAssociation {
@@ -42,18 +44,17 @@ interface HostedAssociation {
   registrationRef: string | null;
   country: string;
   currency: string;
-  plan: 'DISCOVERY' | 'ESSENTIAL' | 'PRO' | 'ENTERPRISE';
+  plan: string;
   subscriptionStatus: 'ACTIVE' | 'TRIAL' | 'EXPIRED' | 'CANCELLED';
-  isActive: boolean;
   trialEndsAt: string | null;
   subscriptionEndsAt: string | null;
+  isActive: boolean;
   createdAt: string;
-  completeness: Completeness;
-  stats: {
-    membersCount: number;
-    caissesCount: number;
-    tontinesCount: number;
-    loansCount: number;
+  _count: {
+    members: number;
+    caisses: number;
+    tontines: number;
+    loans: number;
   };
 }
 
@@ -62,10 +63,7 @@ interface AuditLog {
   action: string;
   details: string;
   createdAt: string;
-  association?: {
-    name: string;
-    slug: string;
-  };
+  association: { name: string } | null;
 }
 
 interface CoAdmin {
@@ -78,13 +76,12 @@ interface CoAdmin {
 }
 
 export default function SuperAdminPage() {
-  const [activeTab, setActiveTab] = useState<'associations' | 'co-admins' | 'audit' | 'settings'>('associations');
+  const [activeTab, setActiveTab] = useState<'overview' | 'associations' | 'co-admins' | 'audit' | 'settings'>('overview');
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<PlatformStats | null>(null);
   const [associations, setAssociations] = useState<HostedAssociation[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [search, setSearch] = useState('');
-  const [filterCompliance, setFilterCompliance] = useState<'ALL' | 'COMPLETE' | 'INCOMPLETE'>('ALL');
 
   // Co-Admins list state
   const [coAdmins, setCoAdmins] = useState<CoAdmin[]>([
@@ -98,185 +95,43 @@ export default function SuperAdminPage() {
   // Modal: Advanced Subscription Management
   const [selectedAssoc, setSelectedAssoc] = useState<HostedAssociation | null>(null);
   const [newPlan, setNewPlan] = useState<'DISCOVERY' | 'ESSENTIAL' | 'PRO' | 'ENTERPRISE'>('ESSENTIAL');
-  const [subStatus, setSubStatus] = useState<'ACTIVE' | 'TRIAL' | 'EXPIRED' | 'CANCELLED'>('ACTIVE');
   const [durationMonths, setDurationMonths] = useState<number>(1);
-  const [paymentReference, setPaymentReference] = useState('');
   const [updating, setUpdating] = useState(false);
 
-  const SUPER_ADMIN_EMAIL = 'gerazayisti@gmail.com';
-
   useEffect(() => {
-    checkAuthAndFetch();
+    fetchAdminData();
   }, []);
-
-  const checkAuthAndFetch = async () => {
-    try {
-      const resStats = await fetch('/api/backend/admin/stats');
-
-      if (resStats.status === 401 || resStats.status === 403) {
-        // Not authenticated -> redirect to login page
-        window.location.href = '/login?redirect=/admin';
-        return;
-      }
-
-      // Check if user is authenticated via mine endpoint
-      const resMine = await fetch('/api/backend/associations/mine');
-      if (resMine.status === 401 || resMine.status === 403) {
-        window.location.href = '/login?redirect=/admin';
-        return;
-      }
-
-      // Read session user email if present
-      let currentUserEmail = '';
-      try {
-        const storedUser = localStorage.getItem('user_session') || sessionStorage.getItem('user_session');
-        if (storedUser) {
-          const parsed = JSON.parse(storedUser);
-          currentUserEmail = parsed.email || '';
-        }
-      } catch {}
-
-      // ENFORCE STRICT CHECK
-      if (!currentUserEmail) {
-        alert("Accès Refusé : Vous devez être connecté pour accéder à cette page.");
-        window.location.href = '/login?redirect=/admin';
-        return;
-      }
-
-      const allowed = [SUPER_ADMIN_EMAIL.toLowerCase(), ...coAdmins.map(c => c.email.toLowerCase())];
-      if (!allowed.includes(currentUserEmail.toLowerCase())) {
-        alert(`Accès Refusé : Le compte ${currentUserEmail} n'est pas autorisé à accéder au backoffice Super-Admin.`);
-        window.location.href = '/login';
-        return;
-      }
-
-      fetchAdminData();
-    } catch {
-      window.location.href = '/login?redirect=/admin';
-    }
-  };
 
   const fetchAdminData = async () => {
     try {
-      const [resStats, resAssocs, resMine, resAudit] = await Promise.all([
+      const [resStats, resAssocs, resAudit] = await Promise.all([
         fetch('/api/backend/admin/stats'),
         fetch('/api/backend/admin/associations'),
-        fetch('/api/backend/associations/mine'),
         fetch('/api/backend/admin/audit-logs'),
       ]);
 
+      if (resStats.status === 401 || resStats.status === 403 || resAssocs.status === 401 || resAssocs.status === 403) {
+        window.location.href = '/login?redirect=/admin';
+        return;
+      }
+
       if (resStats.ok) {
-        const statsData = await resStats.json();
-        setData(statsData);
+        const stats = await resStats.json();
+        setData(stats);
       }
-
-      let allAssocs: any[] = [];
-
       if (resAssocs.ok) {
-        const assocsData = await resAssocs.json();
-        allAssocs = [...allAssocs, ...assocsData];
+        const assocs = await resAssocs.json();
+        setAssociations(assocs);
       }
-
-      if (resMine.ok) {
-        const mineData = await resMine.json();
-        allAssocs = [...allAssocs, ...mineData];
-      }
-
-      // Read local cache as safety fallback
-      try {
-        const stored = JSON.parse(localStorage.getItem('created_associations') || '[]');
-        if (Array.isArray(stored)) {
-          allAssocs = [...allAssocs, ...stored];
-        }
-      } catch {}
-
-      // Deduplicate by slug
-      const uniqueMap = new Map<string, any>();
-      allAssocs.forEach((item) => {
-        const key = item.slug || item.id;
-        if (!key) return;
-
-        if (!uniqueMap.has(key)) {
-          const hasName = Boolean(item.name && item.name.trim().length > 0);
-          const hasMotto = Boolean(item.motto && item.motto.trim().length > 0);
-          const hasLegalStatus = Boolean(item.legalStatus && item.legalStatus.trim().length > 0);
-          const hasRegistrationRef = Boolean(item.registrationRef && item.registrationRef.trim().length > 0);
-
-          const missingFields: string[] = [];
-          if (!hasName) missingFields.push("Nom de l'association");
-          if (!hasMotto) missingFields.push("Devise (Motto)");
-          if (!hasLegalStatus) missingFields.push("Statut Légal");
-          if (!hasRegistrationRef) missingFields.push("N° Récépissé / Enregistrement");
-
-          const completedCount = 4 - missingFields.length;
-          const completenessPercentage = Math.round((completedCount / 4) * 100);
-
-          uniqueMap.set(key, {
-            id: item.id || key,
-            name: item.name || 'Association Sans Nom',
-            slug: item.slug || 'slug-temp',
-            motto: item.motto || null,
-            legalStatus: item.legalStatus || null,
-            registrationRef: item.registrationRef || null,
-            country: item.country || 'CM',
-            currency: item.currency || 'XAF',
-            plan: item.plan || 'DISCOVERY',
-            subscriptionStatus: item.subscriptionStatus || 'ACTIVE',
-            isActive: item.isActive !== undefined ? item.isActive : true,
-            trialEndsAt: item.trialEndsAt || null,
-            subscriptionEndsAt: item.subscriptionEndsAt || null,
-            createdAt: item.createdAt || new Date().toISOString(),
-            completeness: item.completeness || {
-              isComplete: missingFields.length === 0,
-              completedCount,
-              totalRequired: 4,
-              percentage: completenessPercentage,
-              missingFields,
-            },
-            stats: item.stats || {
-              membersCount: 1,
-              caissesCount: 1,
-              tontinesCount: 0,
-              loansCount: 0,
-            },
-          });
-        }
-      });
-
-      setAssociations(Array.from(uniqueMap.values()));
-
       if (resAudit.ok) {
-        const auditData = await resAudit.json();
-        setAuditLogs(auditData);
+        const audit = await resAudit.json();
+        setAuditLogs(audit);
       }
-    } catch {
-      // fallback
+    } catch (err) {
+      console.error(err);
+      window.location.href = '/login?redirect=/admin';
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleToggleStatus = async (assoc: HostedAssociation) => {
-    const newStatus = !assoc.isActive;
-    const confirmMsg = newStatus
-      ? `Voulez-vous réactiver l'association ${assoc.name} ?`
-      : `ATTENTION : Voulez-vous suspendre l'association ${assoc.name} ?`;
-
-    if (!confirm(confirmMsg)) return;
-
-    try {
-      const res = await fetch(`/api/backend/admin/associations/${assoc.id}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isActive: newStatus, reason: `Action SuperAdmin (gerazayisti@gmail.com)` }),
-      });
-
-      if (res.ok) {
-        alert(`Association ${newStatus ? 'réactivée' : 'suspendue'} avec succès.`);
-        fetchAdminData();
-      }
-    } catch {
-      alert("Erreur lors du changement de statut.");
     }
   };
 
@@ -287,637 +142,354 @@ export default function SuperAdminPage() {
     setUpdating(true);
     try {
       const res = await fetch(`/api/backend/admin/associations/${selectedAssoc.id}/subscription`, {
-        method: 'PATCH',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           plan: newPlan,
-          subscriptionStatus: subStatus,
-          durationMonths: Number(durationMonths) || 0,
-          paymentReference,
+          durationMonths,
+          status: 'ACTIVE'
         }),
       });
 
       if (res.ok) {
-        alert(`Abonnement et durée mis à jour pour l'association ${selectedAssoc.name}.`);
+        alert('Abonnement mis à jour avec succès.');
         setSelectedAssoc(null);
         fetchAdminData();
+      } else {
+        const err = await res.json();
+        alert('Erreur: ' + (err.message || 'Impossible de mettre à jour'));
       }
-    } catch {
-      alert("Erreur lors de la mise à jour de l'abonnement.");
+    } catch (err) {
+      console.error(err);
+      alert('Erreur système lors de la mise à jour.');
     } finally {
       setUpdating(false);
     }
   };
 
-  const handleAddCoAdmin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!coAdminEmail) return;
+  const toggleAssociationStatus = async (assoc: HostedAssociation) => {
+    const action = assoc.isActive ? 'Suspendre' : 'Réactiver';
+    if (!confirm(`Voulez-vous vraiment ${action.toLowerCase()} l'association ${assoc.name} ?`)) return;
 
-    const newAdmin: CoAdmin = {
-      id: Date.now().toString(),
-      name: coAdminName || 'Co-Administrateur',
-      email: coAdminEmail,
-      phone: coAdminPhone,
-      role: 'CO_ADMIN',
-      addedAt: new Date().toISOString(),
-    };
+    try {
+      const res = await fetch(`/api/backend/admin/associations/${assoc.id}/status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !assoc.isActive }),
+      });
 
-    setCoAdmins([...coAdmins, newAdmin]);
-    setShowAddCoAdmin(false);
-    setCoAdminName('');
-    setCoAdminEmail('');
-    setCoAdminPhone('');
-    alert(`L'invitation Co-Administrateur a été émise pour ${coAdminEmail}.`);
-  };
-
-  const filteredAssocs = associations.filter((a) => {
-    const matchesSearch =
-      a.name.toLowerCase().includes(search.toLowerCase()) ||
-      a.slug.toLowerCase().includes(search.toLowerCase());
-
-    if (!matchesSearch) return false;
-
-    if (filterCompliance === 'COMPLETE') return a.completeness.isComplete;
-    if (filterCompliance === 'INCOMPLETE') return !a.completeness.isComplete;
-    return true;
-  });
-
-  const planBadges: Record<string, { label: string; bg: string; color: string }> = {
-    DISCOVERY: { label: 'Découverte', bg: '#f1f5f9', color: '#475569' },
-    ESSENTIAL: { label: 'Essentiel (9,9k)', bg: '#eff6ff', color: '#1d4ed8' },
-    PRO: { label: 'Pro (24,9k)', bg: '#f3e8ff', color: '#7e22ce' },
-    ENTERPRISE: { label: 'Enterprise', bg: '#ecfdf5', color: '#047857' },
+      if (res.ok) {
+        fetchAdminData();
+      } else {
+        alert("Erreur lors du changement de statut.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Erreur réseau.");
+    }
   };
 
   if (loading) {
     return (
-      <div style={{ padding: '4rem', textAlign: 'center', color: '#64748b', fontFamily: 'system-ui, sans-serif' }}>
-        Chargement de l'Espace Super-Administration Assos 2.0...
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fafafa', color: '#000' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+          <span className="material-symbols-rounded" style={{ fontSize: '3rem', animation: 'spin 1s linear infinite' }}>autorenew</span>
+          <span style={{ fontWeight: 600 }}>Chargement sécurisé de la console d'administration...</span>
+        </div>
       </div>
     );
   }
 
-  const stats = data?.stats;
+  const filteredAssociations = associations.filter(a =>
+    a.name.toLowerCase().includes(search.toLowerCase()) ||
+    a.slug.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <div style={{ padding: '2rem 3rem', maxWidth: 1550, margin: '0 auto', fontFamily: 'system-ui, sans-serif', color: '#0f172a' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#fafafa', color: '#111', fontFamily: '"Inter", sans-serif' }}>
       
-      {/* Super Admin Top Header Banner */}
-      <div style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', color: '#fff', padding: '2rem 2.5rem', borderRadius: 24, marginBottom: '2rem', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-              <span className="material-symbols-rounded" style={{ color: '#38bdf8', fontSize: '2.2rem' }}>admin_panel_settings</span>
-              <h1 style={{ fontSize: '1.875rem', fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>
-                Plateforme Assos 2.0 — Espace Super-Admin & Co-Administration
-              </h1>
+      {/* SIDEBAR */}
+      <aside style={{ width: '280px', background: '#000', color: '#fff', display: 'flex', flexDirection: 'column', flexShrink: 0, position: 'sticky', top: 0, height: '100vh', overflowY: 'auto' }}>
+        <div style={{ padding: '2rem 1.5rem', borderBottom: '1px solid #333' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
+            <div style={{ width: 32, height: 32, background: '#fff', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span className="material-symbols-rounded" style={{ color: '#000', fontSize: '1.25rem' }}>admin_panel_settings</span>
             </div>
-            <p style={{ color: '#94a3b8', margin: 0, fontSize: '0.95rem' }}>
-              Supervision centrale des associations hébergées, contrôle de conformité des paramètres & abonnements SaaS.
+            <h1 style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>ASSOS HQ</h1>
+          </div>
+          <span style={{ fontSize: '0.75rem', color: '#888', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Super-Admin Console</span>
+        </div>
+
+        <nav style={{ padding: '1.5rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
+          {[
+            { id: 'overview', icon: 'dashboard', label: 'Vue d\'ensemble' },
+            { id: 'associations', icon: 'corporate_fare', label: 'Associations' },
+            { id: 'co-admins', icon: 'shield_person', label: 'Co-Administrateurs' },
+            { id: 'audit', icon: 'list_alt', label: 'Journaux d\'Audit' },
+            { id: 'settings', icon: 'tune', label: 'Paramètres Système' },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.85rem 1rem', borderRadius: '8px',
+                background: activeTab === tab.id ? '#fff' : 'transparent',
+                color: activeTab === tab.id ? '#000' : '#888',
+                border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem', transition: 'all 0.2s', textAlign: 'left'
+              }}
+            >
+              <span className="material-symbols-rounded" style={{ fontSize: '1.2rem' }}>{tab.icon}</span>
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+
+        <div style={{ padding: '1.5rem', borderTop: '1px solid #333' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ width: 36, height: 36, background: '#333', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700 }}>
+              {data?.primaryAdmin.email.substring(0, 1).toUpperCase()}
+            </div>
+            <div style={{ overflow: 'hidden' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 600, whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{data?.primaryAdmin.email}</div>
+              <div style={{ fontSize: '0.7rem', color: '#888' }}>{data?.primaryAdmin.role}</div>
+            </div>
+          </div>
+          <Link href="/login" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ff4444', fontSize: '0.85rem', fontWeight: 600, marginTop: '1rem', textDecoration: 'none' }}>
+            <span className="material-symbols-rounded" style={{ fontSize: '1.1rem' }}>logout</span>
+            Déconnexion
+          </Link>
+        </div>
+      </aside>
+
+      {/* MAIN CONTENT */}
+      <main style={{ flex: 1, padding: '2.5rem', overflowY: 'auto' }}>
+        
+        {/* HEADER */}
+        <header style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h2 style={{ fontSize: '2rem', fontWeight: 800, margin: '0 0 0.5rem 0', letterSpacing: '-0.02em' }}>
+              {activeTab === 'overview' && 'Vue d\'ensemble de la plateforme'}
+              {activeTab === 'associations' && 'Gestion des Locataires'}
+              {activeTab === 'co-admins' && 'Co-Administrateurs'}
+              {activeTab === 'audit' && 'Sécurité & Traçabilité'}
+              {activeTab === 'settings' && 'Paramètres Système'}
+            </h2>
+            <p style={{ color: '#666', margin: 0, fontSize: '0.95rem' }}>
+              Tableau de bord de supervision sécurisé.
             </p>
           </div>
+        </header>
 
-          {/* Admin Identity Card */}
-          <div style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', padding: '0.85rem 1.25rem', borderRadius: 16, backdropFilter: 'blur(8px)' }}>
-            <div style={{ fontSize: '0.8rem', color: '#38bdf8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Super-Administrateur Principal
-            </div>
-            <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#fff', marginTop: '0.2rem' }}>
-              gerazayisti@gmail.com
-            </div>
-            <div style={{ fontSize: '0.85rem', color: '#cbd5e1', marginTop: '0.1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <span className="material-symbols-rounded" style={{ fontSize: '1rem' }}>call</span>
-              +237 695 18 37 68
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* KPI Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
-        
-        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 18, padding: '1.5rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#64748b' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Associations Hébergées</span>
-            <span className="material-symbols-rounded" style={{ color: '#2563eb' }}>domain</span>
-          </div>
-          <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#0f172a', margin: '0.5rem 0 0 0' }}>
-            {stats?.totalAssociations || 0}
-          </h2>
-          <span style={{ fontSize: '0.8rem', color: '#166534', fontWeight: 600 }}>
-            {stats?.activeAssociations} Actives • {stats?.suspendedAssociations} Suspendues
-          </span>
-        </div>
-
-        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 18, padding: '1.5rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#64748b' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Conformité des Paramètres</span>
-            <span className="material-symbols-rounded" style={{ color: '#059669' }}>rule</span>
-          </div>
-          <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#059669', margin: '0.5rem 0 0 0' }}>
-            {associations.filter(a => a.completeness.isComplete).length} / {associations.length}
-          </h2>
-          <span style={{ fontSize: '0.8rem', color: '#d97706', fontWeight: 600 }}>
-            {associations.filter(a => !a.completeness.isComplete).length} Profils Incomplets
-          </span>
-        </div>
-
-        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 18, padding: '1.5rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#64748b' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Revenu Mensuel (MRR)</span>
-            <span className="material-symbols-rounded" style={{ color: '#166534' }}>payments</span>
-          </div>
-          <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#166534', margin: '0.5rem 0 0 0' }}>
-            {(stats?.mrrXaf || 0).toLocaleString('fr-FR')} FCFA
-          </h2>
-          <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>
-            ARR Estimé : {(stats?.arrXaf || 0).toLocaleString('fr-FR')} FCFA / an
-          </span>
-        </div>
-
-        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 18, padding: '1.5rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#64748b' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Co-Administrateurs</span>
-            <span className="material-symbols-rounded" style={{ color: '#7c3aed' }}>manage_accounts</span>
-          </div>
-          <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#7c3aed', margin: '0.5rem 0 0 0' }}>
-            {coAdmins.length}
-          </h2>
-          <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>
-            Habilités sur le panel SuperAdmin
-          </span>
-        </div>
-
-      </div>
-
-      {/* Tabs */}
-      <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', marginBottom: '1.5rem', gap: '1.5rem' }}>
-        <button
-          onClick={() => setActiveTab('associations')}
-          style={{
-            background: 'none',
-            border: 'none',
-            borderBottom: activeTab === 'associations' ? '3px solid #2563eb' : '3px solid transparent',
-            color: activeTab === 'associations' ? '#2563eb' : '#64748b',
-            fontWeight: 700,
-            padding: '0.75rem 0.5rem',
-            fontSize: '1rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-          }}
-        >
-          <span className="material-symbols-rounded">domain</span>
-          Registre des Associations ({associations.length})
-        </button>
-
-        <button
-          onClick={() => setActiveTab('co-admins')}
-          style={{
-            background: 'none',
-            border: 'none',
-            borderBottom: activeTab === 'co-admins' ? '3px solid #2563eb' : '3px solid transparent',
-            color: activeTab === 'co-admins' ? '#2563eb' : '#64748b',
-            fontWeight: 700,
-            padding: '0.75rem 0.5rem',
-            fontSize: '1rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-          }}
-        >
-          <span className="material-symbols-rounded">group_add</span>
-          Co-Administrateurs ({coAdmins.length})
-        </button>
-
-        <button
-          onClick={() => setActiveTab('audit')}
-          style={{
-            background: 'none',
-            border: 'none',
-            borderBottom: activeTab === 'audit' ? '3px solid #2563eb' : '3px solid transparent',
-            color: activeTab === 'audit' ? '#2563eb' : '#64748b',
-            fontWeight: 700,
-            padding: '0.75rem 0.5rem',
-            fontSize: '1rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-          }}
-        >
-          <span className="material-symbols-rounded">history</span>
-          Journaux d'Audit Globaux ({auditLogs.length})
-        </button>
-
-        <button
-          onClick={() => setActiveTab('settings')}
-          style={{
-            background: 'none',
-            border: 'none',
-            borderBottom: activeTab === 'settings' ? '3px solid #2563eb' : '3px solid transparent',
-            color: activeTab === 'settings' ? '#2563eb' : '#64748b',
-            fontWeight: 700,
-            padding: '0.75rem 0.5rem',
-            fontSize: '1rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-          }}
-        >
-          <span className="material-symbols-rounded">settings</span>
-          Configuration Plateforme
-        </button>
-      </div>
-
-      {/* Tab 1: Associations List */}
-      {activeTab === 'associations' && (
-        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 20, padding: '1.75rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-          
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button
-                onClick={() => setFilterCompliance('ALL')}
-                style={{
-                  background: filterCompliance === 'ALL' ? '#0f172a' : '#f1f5f9',
-                  color: filterCompliance === 'ALL' ? '#fff' : '#475569',
-                  border: 'none',
-                  padding: '0.5rem 1rem',
-                  borderRadius: 999,
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                Toutes ({associations.length})
-              </button>
-
-              <button
-                onClick={() => setFilterCompliance('COMPLETE')}
-                style={{
-                  background: filterCompliance === 'COMPLETE' ? '#166534' : '#f0fdf4',
-                  color: filterCompliance === 'COMPLETE' ? '#fff' : '#166534',
-                  border: 'none',
-                  padding: '0.5rem 1rem',
-                  borderRadius: 999,
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                Profils Complets 100% ({associations.filter(a => a.completeness.isComplete).length})
-              </button>
-
-              <button
-                onClick={() => setFilterCompliance('INCOMPLETE')}
-                style={{
-                  background: filterCompliance === 'INCOMPLETE' ? '#dc2626' : '#fef2f2',
-                  color: filterCompliance === 'INCOMPLETE' ? '#fff' : '#dc2626',
-                  border: 'none',
-                  padding: '0.5rem 1rem',
-                  borderRadius: 999,
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                Informations Incomplètes ({associations.filter(a => !a.completeness.isComplete).length})
-              </button>
-            </div>
-
-            <input
-              type="text"
-              placeholder="Rechercher par nom ou par slug..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              style={{ width: 320, padding: '0.6rem 1rem', borderRadius: 10, border: '1px solid #cbd5e1', fontSize: '0.9rem' }}
-            />
-          </div>
-
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid #f1f5f9', color: '#64748b' }}>
-                <th style={{ padding: '0.85rem 1rem' }}>Association</th>
-                <th style={{ padding: '0.85rem 1rem' }}>Conformité Paramètres</th>
-                <th style={{ padding: '0.85rem 1rem' }}>Formule SaaS</th>
-                <th style={{ padding: '0.85rem 1rem' }}>Statut & Échéance</th>
-                <th style={{ padding: '0.85rem 1rem' }}>Membres</th>
-                <th style={{ padding: '0.85rem 1rem' }}>Actions SuperAdmin</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredAssocs.map((a) => (
-                <tr key={a.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                  <td style={{ padding: '1rem' }}>
-                    <strong style={{ display: 'block', fontSize: '0.95rem', color: '#0f172a' }}>{a.name}</strong>
-                    <span style={{ fontSize: '0.78rem', color: '#2563eb', fontWeight: 600 }}>{a.slug}.asso-in.online</span>
-                  </td>
-
-                  {/* Completeness Badge */}
-                  <td style={{ padding: '1rem' }}>
-                    {a.completeness.isComplete ? (
-                      <span style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#166534', padding: '0.3rem 0.65rem', borderRadius: 999, fontSize: '0.78rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
-                        <span className="material-symbols-rounded" style={{ fontSize: '1rem' }}>check_circle</span>
-                        Complet (4/4)
-                      </span>
-                    ) : (
-                      <div>
-                        <span style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#b45309', padding: '0.3rem 0.65rem', borderRadius: 999, fontSize: '0.78rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
-                          <span className="material-symbols-rounded" style={{ fontSize: '1rem' }}>warning</span>
-                          Incomplet ({a.completeness.completedCount}/4)
-                        </span>
-                        <div style={{ fontSize: '0.75rem', color: '#dc2626', marginTop: '0.25rem', fontWeight: 600 }}>
-                          Manque : {a.completeness.missingFields.join(', ')}
-                        </div>
-                      </div>
-                    )}
-                  </td>
-
-                  <td style={{ padding: '1rem' }}>
-                    <span style={{ background: planBadges[a.plan]?.bg || '#f1f5f9', color: planBadges[a.plan]?.color || '#334155', padding: '0.3rem 0.65rem', borderRadius: 999, fontSize: '0.78rem', fontWeight: 700 }}>
-                      {planBadges[a.plan]?.label || a.plan}
-                    </span>
-                  </td>
-
-                  <td style={{ padding: '1rem' }}>
-                    {a.isActive ? (
-                      <span style={{ background: '#f0fdf4', color: '#166534', padding: '0.2rem 0.5rem', borderRadius: 6, fontSize: '0.75rem', fontWeight: 700 }}>
-                        ACTIF
-                      </span>
-                    ) : (
-                      <span style={{ background: '#fef2f2', color: '#991b1b', padding: '0.2rem 0.5rem', borderRadius: 6, fontSize: '0.75rem', fontWeight: 700 }}>
-                        SUSPENDU
-                      </span>
-                    )}
-                    <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.2rem' }}>
-                      {a.subscriptionEndsAt ? `Fin sub: ${new Date(a.subscriptionEndsAt).toLocaleDateString('fr-FR')}` : 'Essai actif'}
-                    </div>
-                  </td>
-
-                  <td style={{ padding: '1rem', fontWeight: 600 }}>
-                    {a.stats.membersCount} membres
-                  </td>
-
-                  <td style={{ padding: '1rem' }}>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button
-                        onClick={() => {
-                          setSelectedAssoc(a);
-                          setNewPlan(a.plan);
-                          setSubStatus(a.subscriptionStatus);
-                        }}
-                        style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '0.45rem 0.85rem', borderRadius: 8, fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}
-                      >
-                        Abonnement & Durée
-                      </button>
-
-                      <button
-                        onClick={() => handleToggleStatus(a)}
-                        style={{
-                          background: a.isActive ? '#fef2f2' : '#f0fdf4',
-                          border: `1px solid ${a.isActive ? '#fecaca' : '#bbf7d0'}`,
-                          color: a.isActive ? '#991b1b' : '#166534',
-                          padding: '0.45rem 0.75rem',
-                          borderRadius: 8,
-                          fontSize: '0.8rem',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {a.isActive ? 'Suspendre' : 'Activer'}
-                      </button>
-
-                      <Link
-                        href={`/${a.slug}/dashboard`}
-                        style={{ background: '#0f172a', color: '#fff', textDecoration: 'none', padding: '0.45rem 0.75rem', borderRadius: 8, fontSize: '0.8rem', fontWeight: 600 }}
-                      >
-                        Voir →
-                      </Link>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Tab 2: Co-Admins Management */}
-      {activeTab === 'co-admins' && (
-        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 20, padding: '1.75rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: '0 0 0.25rem 0' }}>
-                Co-Administrateurs de la Plateforme
-              </h3>
-              <p style={{ color: '#64748b', fontSize: '0.88rem', margin: 0 }}>
-                Habilitations d'accès déléguées au backoffice de supervision.
-              </p>
-            </div>
-
-            <button
-              onClick={() => setShowAddCoAdmin(true)}
-              style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '0.75rem 1.25rem', borderRadius: 10, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-            >
-              <span className="material-symbols-rounded">person_add</span>
-              Inviter un Co-Administrateur
-            </button>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            {coAdmins.map((admin) => (
-              <div key={admin.id} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '1.1rem 1.5rem', borderRadius: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <strong style={{ fontSize: '1rem', color: '#0f172a' }}>{admin.name}</strong>
-                  <div style={{ fontSize: '0.85rem', color: '#2563eb', fontWeight: 600, marginTop: '0.15rem' }}>{admin.email}</div>
-                  <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.15rem' }}>
-                    Téléphone : {admin.phone || 'Non renseigné'}
+        {/* TAB: OVERVIEW */}
+        {activeTab === 'overview' && data && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            
+            {/* KPI Metrics */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
+              {[
+                { label: 'Associations Actives', value: data.stats.activeAssociations, icon: 'corporate_fare' },
+                { label: 'Membres Globaux', value: data.stats.totalMembers, icon: 'group' },
+                { label: 'Transactions Traitées', value: data.stats.totalTransactions, icon: 'receipt_long' },
+                { label: 'Revenu Mensuel (MRR)', value: `${data.stats.mrrXaf.toLocaleString('fr-FR')} XAF`, icon: 'trending_up' },
+              ].map((kpi, i) => (
+                <div key={i} style={{ background: '#fff', border: '1px solid #eaeaea', borderRadius: '12px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{kpi.label}</span>
+                    <span className="material-symbols-rounded" style={{ color: '#000' }}>{kpi.icon}</span>
+                  </div>
+                  <div style={{ fontSize: '2rem', fontWeight: 800, color: '#000', letterSpacing: '-0.03em' }}>
+                    {kpi.value}
                   </div>
                 </div>
+              ))}
+            </div>
 
-                <div>
-                  <span style={{ background: admin.role === 'SUPER_ADMIN' ? '#0f172a' : '#eff6ff', color: admin.role === 'SUPER_ADMIN' ? '#fff' : '#1d4ed8', padding: '0.4rem 0.8rem', borderRadius: 999, fontSize: '0.78rem', fontWeight: 700 }}>
-                    {admin.role === 'SUPER_ADMIN' ? 'SUPER ADMINISTRATEUR PRINCIPAL' : 'CO-ADMINISTRATEUR'}
+            {/* Chart Area */}
+            <div style={{ background: '#fff', border: '1px solid #eaeaea', borderRadius: '12px', padding: '1.5rem', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.5rem' }}>Croissance des inscriptions (6 derniers mois)</h3>
+              <div style={{ height: '300px', width: '100%' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={data.registrationHistory}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eaeaea" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#666' }} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#666' }} dx={-10} />
+                    <Tooltip 
+                      contentStyle={{ background: '#000', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 500 }}
+                      itemStyle={{ color: '#fff' }}
+                    />
+                    <Line type="monotone" dataKey="total" stroke="#000" strokeWidth={3} dot={{ r: 4, fill: '#000', strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+            
+          </div>
+        )}
+
+        {/* TAB: ASSOCIATIONS (DATATABLE ZÉBRÉE) */}
+        {activeTab === 'associations' && (
+          <div style={{ background: '#fff', border: '1px solid #eaeaea', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+            
+            {/* Toolbar */}
+            <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #eaeaea', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ position: 'relative', width: '300px' }}>
+                <span className="material-symbols-rounded" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#888', fontSize: '1.2rem' }}>search</span>
+                <input 
+                  type="text" 
+                  placeholder="Rechercher une association..." 
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  style={{ width: '100%', padding: '0.65rem 1rem 0.65rem 2.5rem', borderRadius: '8px', border: '1px solid #eaeaea', fontSize: '0.9rem', outline: 'none' }}
+                />
+              </div>
+              <button style={{ background: '#000', color: '#fff', border: 'none', padding: '0.65rem 1rem', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>
+                Exporter CSV
+              </button>
+            </div>
+
+            {/* Table */}
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+                <thead>
+                  <tr style={{ background: '#fafafa', borderBottom: '1px solid #eaeaea' }}>
+                    <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: '#666', width: '35%' }}>Nom & Réf.</th>
+                    <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: '#666', width: '15%' }}>Membres</th>
+                    <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: '#666', width: '20%' }}>Plan SaaS</th>
+                    <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: '#666', width: '15%' }}>Statut</th>
+                    <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: '#666', width: '15%', textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredAssociations.map((assoc, idx) => (
+                    <tr key={assoc.id} style={{ borderBottom: '1px solid #eaeaea', background: idx % 2 === 0 ? '#fff' : '#fafafa', transition: 'background 0.2s' }}>
+                      <td style={{ padding: '1rem 1.5rem' }}>
+                        <div style={{ fontWeight: 600, color: '#000', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          {assoc.name}
+                          {!assoc.isActive && (
+                            <span className="material-symbols-rounded" style={{ fontSize: '1rem', color: '#ff4444' }}>block</span>
+                          )}
+                        </div>
+                        <div style={{ fontSize: '0.8rem', color: '#888', marginTop: '0.2rem' }}>{assoc.registrationRef || 'Réf. Inconnue'}</div>
+                      </td>
+                      <td style={{ padding: '1rem 1.5rem', fontWeight: 500 }}>{assoc._count.members}</td>
+                      <td style={{ padding: '1rem 1.5rem' }}>
+                        <span style={{ padding: '0.3rem 0.6rem', borderRadius: '4px', background: '#eee', color: '#333', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>
+                          {assoc.plan}
+                        </span>
+                      </td>
+                      <td style={{ padding: '1rem 1.5rem' }}>
+                        {assoc.subscriptionStatus === 'ACTIVE' && <span style={{ color: '#16a34a', fontWeight: 600, fontSize: '0.85rem' }}>• Actif</span>}
+                        {assoc.subscriptionStatus === 'TRIAL' && <span style={{ color: '#ca8a04', fontWeight: 600, fontSize: '0.85rem' }}>• Essai</span>}
+                        {assoc.subscriptionStatus === 'EXPIRED' && <span style={{ color: '#dc2626', fontWeight: 600, fontSize: '0.85rem' }}>• Expiré</span>}
+                        {assoc.subscriptionStatus === 'CANCELLED' && <span style={{ color: '#52525b', fontWeight: 600, fontSize: '0.85rem' }}>• Annulé</span>}
+                      </td>
+                      <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                          <button 
+                            onClick={() => setSelectedAssoc(assoc)}
+                            title="Modifier l'abonnement"
+                            style={{ width: '32px', height: '32px', borderRadius: '6px', border: '1px solid #eaeaea', background: '#fff', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                            <span className="material-symbols-rounded" style={{ fontSize: '1.1rem' }}>payments</span>
+                          </button>
+                          <button 
+                            onClick={() => toggleAssociationStatus(assoc)}
+                            title={assoc.isActive ? "Suspendre l'association" : "Réactiver l'association"}
+                            style={{ width: '32px', height: '32px', borderRadius: '6px', border: '1px solid #eaeaea', background: assoc.isActive ? '#fff' : '#000', color: assoc.isActive ? '#ff4444' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                            <span className="material-symbols-rounded" style={{ fontSize: '1.1rem' }}>{assoc.isActive ? 'block' : 'play_arrow'}</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {filteredAssociations.length === 0 && (
+                    <tr>
+                      <td colSpan={5} style={{ padding: '3rem', textAlign: 'center', color: '#888' }}>Aucune association trouvée.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: CO-ADMINS */}
+        {activeTab === 'co-admins' && (
+          <div style={{ background: '#fff', border: '1px solid #eaeaea', borderRadius: '12px', padding: '2rem', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+             <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: '0 0 1.5rem 0' }}>Liste des Co-Administrateurs</h3>
+             {/* Simple List for now */}
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {coAdmins.map((admin) => (
+                <div key={admin.id} style={{ border: '1px solid #eaeaea', padding: '1.25rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '1.05rem', color: '#000' }}>{admin.name}</div>
+                    <div style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.25rem' }}>{admin.email}</div>
+                  </div>
+                  <span style={{ padding: '0.4rem 0.8rem', background: admin.role === 'SUPER_ADMIN' ? '#000' : '#f0f0f0', color: admin.role === 'SUPER_ADMIN' ? '#fff' : '#000', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>
+                    {admin.role}
                   </span>
                 </div>
-              </div>
-            ))}
+              ))}
+             </div>
+             <button style={{ marginTop: '1.5rem', background: '#000', color: '#fff', border: 'none', padding: '0.75rem 1.25rem', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>
+                + Inviter un Co-Admin
+             </button>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Tab 3: Audit Logs */}
-      {activeTab === 'audit' && (
-        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 20, padding: '1.75rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, margin: '0 0 1.25rem 0' }}>Journaux d'Audit Globaux</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {auditLogs.map((log) => (
-              <div key={log.id} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '1rem 1.25rem', borderRadius: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#0f172a' }}>{log.action}</div>
-                  <div style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '0.2rem' }}>
-                    Association: <strong>{log.association?.name || 'Plateforme'}</strong> • {log.details}
+        {/* TAB: AUDIT LOGS */}
+        {activeTab === 'audit' && (
+          <div style={{ background: '#fff', border: '1px solid #eaeaea', borderRadius: '12px', padding: '2rem', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: '0 0 1.5rem 0' }}>Journaux d'Audit (Sécurité)</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {auditLogs.length > 0 ? auditLogs.map(log => (
+                <div key={log.id} style={{ borderBottom: '1px solid #eaeaea', paddingBottom: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <strong style={{ fontSize: '0.95rem' }}>{log.action}</strong>
+                    <span style={{ fontSize: '0.8rem', color: '#888' }}>{new Date(log.createdAt).toLocaleString('fr-FR')}</span>
                   </div>
+                  <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>{log.association?.name ? `[${log.association.name}] ` : ''}{log.details}</div>
                 </div>
-                <div style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 600 }}>
-                  {new Date(log.createdAt).toLocaleString('fr-FR')}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Tab 4: System Settings */}
-      {activeTab === 'settings' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}>
-          <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 20, padding: '1.75rem' }}>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span className="material-symbols-rounded" style={{ color: '#2563eb' }}>cell_tower</span>
-              Passerelles Mobile Money (MTN & Orange)
-            </h3>
-            <p style={{ fontSize: '0.88rem', color: '#64748b', lineHeight: 1.6 }}>
-              Agrégateurs locaux intégrés : <strong>MeSomb, Campay, CinetPay, TouchPay</strong> pour la collecte Push USSD et le retrait vers les portefeuilles virtuels.
-            </p>
-            <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, color: '#166534', fontSize: '0.85rem', fontWeight: 700 }}>
-              Webhooks HMAC-SHA256 Signés : ACTIF
+              )) : (
+                <div style={{ color: '#888', fontSize: '0.9rem' }}>Aucun journal récent.</div>
+              )}
             </div>
           </div>
+        )}
 
-          <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 20, padding: '1.75rem' }}>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span className="material-symbols-rounded" style={{ color: '#d97706' }}>sms</span>
-              SMS & Notifications Critiques (Termii)
-            </h3>
-            <p style={{ fontSize: '0.88rem', color: '#64748b', lineHeight: 1.6 }}>
-              Crédits SMS mutualisés pour l'envoi des rappels de cotisations de deuil (priorité 48h-72h) et des alertes de prêts.
-            </p>
-            <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, color: '#b45309', fontSize: '0.85rem', fontWeight: 700 }}>
-              Solde SMS Plateforme : 45 800 SMS disponibles
-            </div>
-          </div>
-        </div>
-      )}
+      </main>
 
-      {/* Modal: Invite Co-Admin */}
-      {showAddCoAdmin && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ background: '#fff', padding: '2rem', borderRadius: 20, maxWidth: 480, width: '100%' }}>
-            <h3 style={{ margin: '0 0 1.25rem 0', fontWeight: 800, fontSize: '1.2rem' }}>Inviter un Co-Administrateur</h3>
-            <form onSubmit={handleAddCoAdmin}>
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.88rem' }}>Nom & Prénom</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Nom complet"
-                  value={coAdminName}
-                  onChange={(e) => setCoAdminName(e.target.value)}
-                  style={{ width: '100%', padding: '0.6rem', borderRadius: 8, border: '1px solid #cbd5e1', marginTop: '0.3rem' }}
-                />
-              </div>
-
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.88rem' }}>Adresse Email (Obligatoire)</label>
-                <input
-                  type="email"
-                  required
-                  placeholder="coadmin@domaine.com"
-                  value={coAdminEmail}
-                  onChange={(e) => setCoAdminEmail(e.target.value)}
-                  style={{ width: '100%', padding: '0.6rem', borderRadius: 8, border: '1px solid #cbd5e1', marginTop: '0.3rem' }}
-                />
-              </div>
-
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.88rem' }}>Numéro de téléphone</label>
-                <input
-                  type="text"
-                  placeholder="Ex: 695000000"
-                  value={coAdminPhone}
-                  onChange={(e) => setCoAdminPhone(e.target.value)}
-                  style={{ width: '100%', padding: '0.6rem', borderRadius: 8, border: '1px solid #cbd5e1', marginTop: '0.3rem' }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-                <button type="button" onClick={() => setShowAddCoAdmin(false)} style={{ padding: '0.6rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: 8, cursor: 'pointer' }}>
-                  Annuler
-                </button>
-                <button type="submit" style={{ padding: '0.6rem 1rem', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>
-                  Émettre l'invitation
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal: Advanced Subscription & Duration Editor */}
+      {/* SUBSCRIPTION MODAL */}
       {selectedAssoc && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ background: '#fff', padding: '2rem', borderRadius: 20, maxWidth: 520, width: '100%', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
-            <h3 style={{ margin: '0 0 1rem 0', fontWeight: 800, fontSize: '1.25rem' }}>
-              Gestion de l'Abonnement — {selectedAssoc.name}
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' }}>
+          <div style={{ background: '#fff', padding: '2.5rem', borderRadius: '16px', maxWidth: '480px', width: '100%', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+            <h3 style={{ margin: '0 0 1.5rem 0', fontWeight: 800, fontSize: '1.3rem', letterSpacing: '-0.02em' }}>
+              Abonnement — {selectedAssoc.name}
             </h3>
-
             <form onSubmit={handleUpdateSubscription}>
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.88rem', marginBottom: '0.3rem' }}>Formule SaaS</label>
-                <select
-                  value={newPlan}
-                  onChange={(e) => setNewPlan(e.target.value as any)}
-                  style={{ width: '100%', padding: '0.65rem', borderRadius: 10, border: '1px solid #cbd5e1', fontSize: '0.9rem' }}
-                >
-                  <option value="DISCOVERY">Formule Découverte (Gratuit)</option>
-                  <option value="ESSENTIAL">Formule Essentiel (9 900 XAF/mois)</option>
-                  <option value="PRO">Formule Pro (24 900 XAF/mois)</option>
-                  <option value="ENTERPRISE">Formule Enterprise (Sur Devis)</option>
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.5rem' }}>Formule SaaS</label>
+                <select value={newPlan} onChange={(e) => setNewPlan(e.target.value as any)} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #eaeaea', fontSize: '0.95rem', outline: 'none' }}>
+                  <option value="DISCOVERY">Découverte (Gratuit)</option>
+                  <option value="ESSENTIAL">Essentiel (9 900 XAF/mois)</option>
+                  <option value="PRO">Pro (24 900 XAF/mois)</option>
+                  <option value="ENTERPRISE">Enterprise</option>
                 </select>
               </div>
-
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.88rem', marginBottom: '0.3rem' }}>Durée de la prolongation</label>
-                <select
-                  value={durationMonths}
-                  onChange={(e) => setDurationMonths(parseInt(e.target.value) || 0)}
-                  style={{ width: '100%', padding: '0.65rem', borderRadius: 10, border: '1px solid #cbd5e1', fontSize: '0.9rem' }}
-                >
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.5rem' }}>Prolonger de :</label>
+                <select value={durationMonths} onChange={(e) => setDurationMonths(parseInt(e.target.value) || 0)} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #eaeaea', fontSize: '0.95rem', outline: 'none' }}>
                   <option value={1}>+ 1 mois</option>
                   <option value={3}>+ 3 mois (Trimestre)</option>
                   <option value={6}>+ 6 mois (Semestre)</option>
-                  <option value={12}>+ 12 mois (1 An - Réduction 2 mois)</option>
+                  <option value={12}>+ 12 mois (1 An)</option>
                 </select>
               </div>
-
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.88rem', marginBottom: '0.3rem' }}>Référence du règlement (Optionnel)</label>
-                <input
-                  type="text"
-                  placeholder="Ex: Payé par Mobile Money 695183768 / Virement"
-                  value={paymentReference}
-                  onChange={(e) => setPaymentReference(e.target.value)}
-                  style={{ width: '100%', padding: '0.65rem', borderRadius: 10, border: '1px solid #cbd5e1', fontSize: '0.9rem' }}
-                />
-              </div>
-
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-                <button
-                  type="button"
-                  onClick={() => setSelectedAssoc(null)}
-                  style={{ padding: '0.65rem 1.25rem', borderRadius: 10, border: '1px solid #cbd5e1', background: '#fff', cursor: 'pointer', fontWeight: 600 }}
-                >
+                <button type="button" onClick={() => setSelectedAssoc(null)} style={{ padding: '0.75rem 1.25rem', borderRadius: '8px', border: '1px solid #eaeaea', background: '#fff', cursor: 'pointer', fontWeight: 600, color: '#000' }}>
                   Annuler
                 </button>
-                <button
-                  type="submit"
-                  disabled={updating}
-                  style={{ padding: '0.65rem 1.25rem', borderRadius: 10, background: '#2563eb', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 600 }}
-                >
-                  {updating ? 'Mise à jour...' : 'Valider l\'Abonnement'}
+                <button type="submit" disabled={updating} style={{ padding: '0.75rem 1.25rem', borderRadius: '8px', background: '#000', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
+                  {updating ? 'Validation...' : 'Confirmer'}
                 </button>
               </div>
             </form>
