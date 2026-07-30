@@ -20,6 +20,7 @@ interface Association {
   joiningFee: number;
   role?: string;
   logoUrl?: string | null;
+  trialEndsAt?: string | null;
 }
 
 export default function SettingsPage() {
@@ -560,12 +561,14 @@ export default function SettingsPage() {
             </div>
 
             {/* Trial expiration notice */}
-            <div style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#b45309', padding: '0.85rem 1rem', borderRadius: 12, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.82rem' }}>
-              <span className="material-symbols-rounded" style={{ fontSize: '1.2rem' }}>info</span>
-              <span>
-                Votre période d'essai gratuit se termine dans <strong>14 jours</strong>.
-              </span>
-            </div>
+            {association?.trialEndsAt && new Date(association.trialEndsAt) > new Date() && (
+              <div style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#b45309', padding: '0.85rem 1rem', borderRadius: 12, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.82rem' }}>
+                <span className="material-symbols-rounded" style={{ fontSize: '1.2rem' }}>info</span>
+                <span>
+                  Votre période d'essai gratuit se termine dans <strong>{Math.ceil((new Date(association.trialEndsAt).getTime() - new Date().getTime()) / (1000 * 3600 * 24))} jours</strong>.
+                </span>
+              </div>
+            )}
 
             {/* Plan Cards Stack */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>

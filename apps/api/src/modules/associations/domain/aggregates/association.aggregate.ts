@@ -15,6 +15,7 @@ export interface AssociationProps {
   alertThresholds: any | null;
   plan: SubscriptionPlan;
   isActive: boolean;
+  trialEndsAt: Date | null;
   createdAt: Date;
 }
 
@@ -43,6 +44,7 @@ export class AssociationAggregate {
   readonly alertThresholds: any | null;
   readonly plan: SubscriptionPlan;
   readonly isActive: boolean;
+  readonly trialEndsAt: Date | null;
   readonly createdAt: Date;
 
   constructor(props: AssociationProps) {

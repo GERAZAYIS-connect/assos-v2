@@ -37,6 +37,7 @@ export class PrismaAssociationRepository implements IAssociationRepository {
       alertThresholds: record.alertThresholds ? JSON.parse(record.alertThresholds) : null,
       plan: record.plan as SubscriptionPlan,
       isActive: record.isActive,
+      trialEndsAt: record.trialEndsAt,
       createdAt: record.createdAt,
     });
   }
