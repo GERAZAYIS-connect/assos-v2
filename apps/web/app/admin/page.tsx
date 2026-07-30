@@ -685,7 +685,7 @@ export default function SuperAdminPage() {
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                     <XAxis dataKey="plan" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#666' }} />
                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#999' }} tickFormatter={v => `${Math.round(v / 1000)}K`} />
-                    <Tooltip contentStyle={{ background: '#000', border: 'none', borderRadius: 8, color: '#fff', fontSize: 12 }} formatter={(v: number) => [`${fmt(v)} XAF`, 'Revenue']} />
+                    <Tooltip contentStyle={{ background: '#000', border: 'none', borderRadius: 8, color: '#fff', fontSize: 12 }} formatter={(v) => [`${fmt(Number(v ?? 0))} XAF`, 'Revenue']} />
                     <Bar dataKey="revenueXaf" radius={[4, 4, 0, 0]}>
                       {saasMetrics.mrrByPlan.map((p) => <Cell key={p.plan} fill={PLAN_COLORS[p.plan] || '#000'} />)}
                     </Bar>
