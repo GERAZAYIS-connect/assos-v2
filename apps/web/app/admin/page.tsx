@@ -210,8 +210,14 @@ export default function SuperAdminPage() {
       }
 
       if (resStats.ok) setStats(await resStats.json());
-      if (resAssocs.ok) setAssociations(await resAssocs.json());
-      if (resAudit.ok) setAuditLogs(await resAudit.json());
+      if (resAssocs.ok) {
+        const data = await resAssocs.json();
+        setAssociations(Array.isArray(data) ? data : []);
+      }
+      if (resAudit.ok) {
+        const data = await resAudit.json();
+        setAuditLogs(Array.isArray(data) ? data : []);
+      }
 
       // Fetch remaining data in background
       const [resUsers, resAnomalies, resSaas, resMsgs, resSubs] = await Promise.all([
@@ -221,11 +227,23 @@ export default function SuperAdminPage() {
         fetch('/api/backend/admin/messages'),
         fetch('/api/backend/admin/subscriptions'),
       ]);
-      if (resUsers.ok) setUsers(await resUsers.json());
-      if (resAnomalies.ok) setAnomalies(await resAnomalies.json());
+      if (resUsers.ok) {
+        const data = await resUsers.json();
+        setUsers(Array.isArray(data) ? data : []);
+      }
+      if (resAnomalies.ok) {
+        const data = await resAnomalies.json();
+        setAnomalies(Array.isArray(data) ? data : []);
+      }
       if (resSaas.ok) setSaasMetrics(await resSaas.json());
-      if (resMsgs.ok) setMessages(await resMsgs.json());
-      if (resSubs.ok) setSubscriptions(await resSubs.json());
+      if (resMsgs.ok) {
+        const data = await resMsgs.json();
+        setMessages(Array.isArray(data) ? data : []);
+      }
+      if (resSubs.ok) {
+        const data = await resSubs.json();
+        setSubscriptions(Array.isArray(data) ? data : []);
+      }
     } catch {
       setAuthError('Erreur de connexion au serveur.');
     } finally {
@@ -309,9 +327,9 @@ export default function SuperAdminPage() {
     { id: 'users', icon: 'group', label: 'Utilisateurs' },
     { id: 'subscriptions', icon: 'card_membership', label: 'Abonnements' },
     { id: 'saas', icon: 'trending_up', label: 'Métriques SaaS' },
-    { id: 'anomalies', icon: 'warning', label: 'Anomalies', badge: stats?.stats.anomaliesCount },
+    { id: 'anomalies', icon: 'warning', label: 'Anomalies', badge: stats?.stats?.anomaliesCount },
     { id: 'audit', icon: 'manage_search', label: 'Journaux d\'Audit' },
-    { id: 'support', icon: 'support_agent', label: 'Support', badge: stats?.stats.contactMessagesUnread },
+    { id: 'support', icon: 'support_agent', label: 'Support', badge: stats?.stats?.contactMessagesUnread },
     { id: 'settings', icon: 'tune', label: 'Paramètres' },
     { id: 'co-admins', icon: 'shield_person', label: 'Co-Administrateurs' },
   ];
@@ -366,10 +384,10 @@ export default function SuperAdminPage() {
         <div style={{ padding: '1.25rem 1.5rem', borderTop: '1px solid #1f1f1f' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{ width: 34, height: 34, background: '#222', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '0.9rem' }}>
-              {stats?.primaryAdmin.email?.substring(0, 1).toUpperCase() || 'A'}
+              {stats?.primaryAdmin?.email?.substring(0, 1).toUpperCase() || 'A'}
             </div>
             <div>
-              <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#fff' }}>{stats?.primaryAdmin.email}</div>
+              <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#fff' }}>{stats?.primaryAdmin?.email}</div>
               <div style={{ fontSize: '0.7rem', color: '#666', fontWeight: 600 }}>SUPER_ADMIN</div>
             </div>
           </div>
@@ -387,12 +405,12 @@ export default function SuperAdminPage() {
 
             {/* KPI Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-              <KpiCard icon="corporate_fare" label="Associations" value={fmt(stats.stats.totalAssociations)} sub={`${stats.stats.activeAssociations} actives · ${stats.stats.trialingAssociations} en essai · ${stats.stats.suspendedAssociations} suspendues`} />
-              <KpiCard icon="group" label="Membres Actifs" value={fmt(stats.stats.totalMembers)} sub="Tous statuts confondus" />
-              <KpiCard icon="payments" label="Volume Total XAF" value={`${fmt(Math.round(stats.stats.totalVolume / 1000))} K`} sub="Transactions confirmées" />
-              <KpiCard icon="trending_up" label="MRR" value={`${fmt(stats.stats.mrrXaf)} XAF`} sub={`ARR : ${fmt(stats.stats.arrXaf)} XAF`} />
-              <KpiCard icon="warning" label="Anomalies Actives" value={stats.stats.anomaliesCount} sub={`${stats.stats.trialsExpiringSoon} essais expirant sous 7j`} alert={stats.stats.anomaliesCount > 0} />
-              <KpiCard icon="account_balance" label="Prêts Actifs" value={fmt(stats.stats.loansActive)} sub={`${stats.stats.tontinesActive} tontines en cours`} />
+              <KpiCard icon="corporate_fare" label="Associations" value={fmt(stats?.stats?.totalAssociations)} sub={`${stats?.stats?.activeAssociations || 0} actives · ${stats?.stats?.trialingAssociations || 0} en essai · ${stats?.stats?.suspendedAssociations || 0} suspendues`} />
+              <KpiCard icon="group" label="Membres Actifs" value={fmt(stats?.stats?.totalMembers)} sub="Tous statuts confondus" />
+              <KpiCard icon="payments" label="Volume Total XAF" value={`${fmt(Math.round((stats?.stats?.totalVolume || 0) / 1000))} K`} sub="Transactions confirmées" />
+              <KpiCard icon="trending_up" label="MRR" value={`${fmt(stats?.stats?.mrrXaf)} XAF`} sub={`ARR : ${fmt(stats?.stats?.arrXaf)} XAF`} />
+              <KpiCard icon="warning" label="Anomalies Actives" value={stats?.stats?.anomaliesCount || 0} sub={`${stats?.stats?.trialsExpiringSoon || 0} essais expirant sous 7j`} alert={(stats?.stats?.anomaliesCount || 0) > 0} />
+              <KpiCard icon="account_balance" label="Prêts Actifs" value={fmt(stats?.stats?.loansActive)} sub={`${stats?.stats?.tontinesActive || 0} tontines en cours`} />
             </div>
 
             {/* Charts Row */}
@@ -400,7 +418,7 @@ export default function SuperAdminPage() {
               <Card>
                 <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 1.5rem 0' }}>Croissance des inscriptions (6 mois)</h3>
                 <ResponsiveContainer width="100%" height={220}>
-                  <LineChart data={stats.registrationHistory}>
+                  <LineChart data={stats.registrationHistory || []}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#999' }} />
                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#999' }} />
@@ -413,13 +431,13 @@ export default function SuperAdminPage() {
               <Card>
                 <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 1.5rem 0' }}>Répartition par Formule</h3>
                 <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={stats.planDistribution} layout="vertical">
+                  <BarChart data={stats.planDistribution || []} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
                     <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#999' }} />
                     <YAxis dataKey="plan" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#666' }} width={80} />
                     <Tooltip contentStyle={{ background: '#000', border: 'none', borderRadius: 8, color: '#fff', fontSize: 12 }} />
                     <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-                      {stats.planDistribution.map((p) => (
+                      {(stats.planDistribution || []).map((p) => (
                         <Cell key={p.plan} fill={PLAN_COLORS[p.plan] || '#000'} />
                       ))}
                     </Bar>
@@ -433,11 +451,11 @@ export default function SuperAdminPage() {
               <Card>
                 <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 1rem 0' }}>Indicateurs Système</h3>
                 {[
-                  { icon: 'cloud', label: 'Disponibilité (Uptime)', value: stats.stats.uptime, ok: true },
-                  { icon: 'receipt_long', label: 'Journaux d\'Audit', value: fmt(stats.stats.auditLogsCount), ok: true },
-                  { icon: 'gavel', label: 'Sanctions Impayées', value: fmt(stats.stats.sanctionsPending), ok: stats.stats.sanctionsPending === 0 },
-                  { icon: 'pending', label: 'Essais expirant ≤ 7j', value: stats.stats.trialsExpiringSoon, ok: stats.stats.trialsExpiringSoon === 0 },
-                  { icon: 'mail', label: 'Messages non lus', value: stats.stats.contactMessagesUnread, ok: stats.stats.contactMessagesUnread === 0 },
+                  { icon: 'cloud', label: 'Disponibilité (Uptime)', value: stats?.stats?.uptime || '—', ok: true },
+                  { icon: 'receipt_long', label: 'Journaux d\'Audit', value: fmt(stats?.stats?.auditLogsCount), ok: true },
+                  { icon: 'gavel', label: 'Sanctions Impayées', value: fmt(stats?.stats?.sanctionsPending), ok: (stats?.stats?.sanctionsPending || 0) === 0 },
+                  { icon: 'pending', label: 'Essais expirant ≤ 7j', value: stats?.stats?.trialsExpiringSoon || 0, ok: (stats?.stats?.trialsExpiringSoon || 0) === 0 },
+                  { icon: 'mail', label: 'Messages non lus', value: stats?.stats?.contactMessagesUnread || 0, ok: (stats?.stats?.contactMessagesUnread || 0) === 0 },
                 ].map(row => (
                   <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.625rem 0', borderBottom: '1px solid #f4f4f4' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
@@ -451,9 +469,9 @@ export default function SuperAdminPage() {
 
               <Card>
                 <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 1rem 0' }}>Dernières Anomalies de Paiement</h3>
-                {stats.recentAnomalies.length === 0 ? (
+                {(stats.recentAnomalies || []).length === 0 ? (
                   <div style={{ color: '#888', fontSize: '0.875rem', textAlign: 'center', padding: '2rem 0' }}>Aucune anomalie récente ✓</div>
-                ) : stats.recentAnomalies.map(a => (
+                ) : (stats.recentAnomalies || []).map(a => (
                   <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.625rem 0', borderBottom: '1px solid #f4f4f4' }}>
                     <div>
                       <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{a.association?.name || 'Association inconnue'}</div>
@@ -508,8 +526,8 @@ export default function SuperAdminPage() {
                     <TD><span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{assoc.country}</span></TD>
                     <TD><span style={{ padding: '0.2rem 0.5rem', background: '#f4f4f5', borderRadius: 4, fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.04em' }}>{assoc.plan}</span></TD>
                     <TD><Badge status={assoc.subscriptionStatus} /></TD>
-                    <TD><strong>{assoc.stats.membersCount}</strong></TD>
-                    <TD><span style={{ fontWeight: 600 }}>{fmt(Math.round(assoc.stats.totalVolumeXaf / 1000))} K</span></TD>
+                    <TD><strong>{assoc.stats?.membersCount || 0}</strong></TD>
+                    <TD><span style={{ fontWeight: 600 }}>{fmt(Math.round((assoc.stats?.totalVolumeXaf || 0) / 1000))} K</span></TD>
                     <TD><span style={{ fontSize: '0.8rem', color: '#888' }}>{fmtDate(assoc.lastActivity)}</span></TD>
                     <TD right>
                       <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end' }}>
@@ -693,13 +711,13 @@ export default function SuperAdminPage() {
               <Card>
                 <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 1.5rem 0' }}>Revenus par Formule</h3>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={saasMetrics.mrrByPlan}>
+                  <BarChart data={saasMetrics.mrrByPlan || []}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                     <XAxis dataKey="plan" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#666' }} />
                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#999' }} tickFormatter={v => `${Math.round(v / 1000)}K`} />
                     <Tooltip contentStyle={{ background: '#000', border: 'none', borderRadius: 8, color: '#fff', fontSize: 12 }} formatter={(v) => [`${fmt(Number(v ?? 0))} XAF`, 'Revenue']} />
                     <Bar dataKey="revenueXaf" radius={[4, 4, 0, 0]}>
-                      {saasMetrics.mrrByPlan.map((p) => <Cell key={p.plan} fill={PLAN_COLORS[p.plan] || '#000'} />)}
+                      {(saasMetrics.mrrByPlan || []).map((p) => <Cell key={p.plan} fill={PLAN_COLORS[p.plan] || '#000'} />)}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -707,13 +725,13 @@ export default function SuperAdminPage() {
 
               <Card>
                 <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 1.5rem 0' }}>Répartition Géographique</h3>
-                {saasMetrics.countryDistribution.length === 0 ? (
+                {(saasMetrics.countryDistribution || []).length === 0 ? (
                   <div style={{ color: '#888', textAlign: 'center', padding: '3rem 0' }}>Aucune donnée.</div>
                 ) : (
                   <ResponsiveContainer width="100%" height={250}>
                     <PieChart>
-                      <Pie data={saasMetrics.countryDistribution} dataKey="count" nameKey="country" cx="50%" cy="50%" outerRadius={100} label={(props: any) => `${props.name || props.country || ''} ${((props.percent || 0) * 100).toFixed(0)}%`} labelLine={false}>
-                        {saasMetrics.countryDistribution.map((_, i) => (
+                      <Pie data={saasMetrics.countryDistribution || []} dataKey="count" nameKey="country" cx="50%" cy="50%" outerRadius={100} label={(props: any) => `${props.name || props.country || ''} ${((props.percent || 0) * 100).toFixed(0)}%`} labelLine={false}>
+                        {(saasMetrics.countryDistribution || []).map((_, i) => (
                           <Cell key={i} fill={`hsl(${i * 45}, 20%, ${20 + i * 8}%)`} />
                         ))}
                       </Pie>
@@ -729,7 +747,7 @@ export default function SuperAdminPage() {
               <TableWrapper>
                 <thead><tr><TH>Formule</TH><TH>Associations</TH><TH right>Revenus Mensuels</TH></tr></thead>
                 <tbody>
-                  {saasMetrics.mrrByPlan.map((p, i) => (
+                  {(saasMetrics.mrrByPlan || []).map((p, i) => (
                     <tr key={p.plan} style={{ background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
                       <TD><span style={{ fontWeight: 700 }}>{p.plan}</span></TD>
                       <TD>{p.count}</TD>
