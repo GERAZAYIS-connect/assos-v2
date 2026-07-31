@@ -343,59 +343,65 @@ export class PrismaTontineRepository implements ITontineRepository {
 
   // ACID Atomic Operation: Renew Tontine for a new cycle
   async renewTontineAtomic(tontineId: string): Promise<any> {
-    return this.prisma.$transaction(async (tx) => {
-      const tontine = await tx.tontine.findUnique({
-        where: { id: tontineId },
-        include: { members: true, rounds: true },
-      });
+    return this.prisma.$transaction(
+      async (tx) => {
+        const tontine = await tx.tontine.findUnique({
+          where: { id: tontineId },
+          include: { members: true, rounds: true },
+        });
 
-      if (!tontine) throw new Error('Tontine introuvable.');
+        if (!tontine) throw new Error('Tontine introuvable.');
 
-      const memberIds = tontine.members.map((m) => m.memberId);
-      if (memberIds.length === 0) throw new Error('Aucun membre inscrit dans cette tontine.');
+        const memberIds = tontine.members.map((m) => m.memberId);
+        if (memberIds.length === 0) throw new Error('Aucun membre inscrit dans cette tontine.');
 
-      const memberCount = memberIds.length;
-      const now = new Date();
-      const maxRoundNumber = tontine.rounds.reduce((max, r) => Math.max(max, r.roundNumber), 0);
+        const memberCount = memberIds.length;
+        const now = new Date();
+        const maxRoundNumber = tontine.rounds.reduce((max, r) => Math.max(max, r.roundNumber), 0);
 
-      // Create new rounds for the new cycle
-      for (let i = 1; i <= memberCount; i++) {
-        const dueDate = new Date(now);
-        if (tontine.frequency === 'WEEKLY') {
-          dueDate.setDate(dueDate.getDate() + i * 7);
-        } else if (tontine.frequency === 'BIWEEKLY') {
-          dueDate.setDate(dueDate.getDate() + i * 14);
-        } else {
-          dueDate.setMonth(dueDate.getMonth() + i);
+        // Create new rounds for the new cycle
+        for (let i = 1; i <= memberCount; i++) {
+          const dueDate = new Date(now);
+          if (tontine.frequency === 'WEEKLY') {
+            dueDate.setDate(dueDate.getDate() + i * 7);
+          } else if (tontine.frequency === 'BIWEEKLY') {
+            dueDate.setDate(dueDate.getDate() + i * 14);
+          } else {
+            dueDate.setMonth(dueDate.getMonth() + i);
+          }
+
+          const newRoundNumber = maxRoundNumber + i;
+
+          await tx.tontineRound.create({
+            data: {
+              tontineId: tontine.id,
+              roundNumber: newRoundNumber,
+              dueDate,
+              status: 'OPEN',
+              potAmount: tontine.amountPerRound * memberCount,
+              contributions: {
+                create: memberIds.map((mId) => ({
+                  memberId: mId,
+                  amount: tontine.amountPerRound,
+                  isPaid: false,
+                })),
+              },
+            },
+          });
         }
 
-        const newRoundNumber = maxRoundNumber + i;
-
-        await tx.tontineRound.create({
-          data: {
-            tontineId: tontine.id,
-            roundNumber: newRoundNumber,
-            dueDate,
-            status: 'OPEN',
-            potAmount: tontine.amountPerRound * memberCount,
-            contributions: {
-              create: memberIds.map((mId) => ({
-                memberId: mId,
-                amount: tontine.amountPerRound,
-                isPaid: false,
-              })),
-            },
-          },
+        // Re-activate Tontine
+        await tx.tontine.update({
+          where: { id: tontineId },
+          data: { status: 'ACTIVE' },
         });
+
+        return this.findById(tontineId);
+      },
+      {
+        maxWait: 5000,
+        timeout: 30000, // 30 seconds to allow slow SQLite database writes
       }
-
-      // Re-activate Tontine
-      await tx.tontine.update({
-        where: { id: tontineId },
-        data: { status: 'ACTIVE' },
-      });
-
-      return this.findById(tontineId);
-    });
+    );
   }
 }
